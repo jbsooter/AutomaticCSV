@@ -1,0 +1,5 @@
+﻿Name,Manufacturer,Weight,Type,FuelEconomy,Range,FuelBlend,MaximumHaulWeight,SleeperBunk
+9200,International,5,Tractor Trailer,5,400,Traditional Diesel,15.3,Yes
+T880,Kenworth,4,Tractor Trailer,6,335,Biodiesel Blend,18.2,No
+379,Peterbilt,5.5,Tractor Trailer,7,550,Biodiesel Blend,12,No
+Great Dane,Great Dane,3.8,Tractor Trailer,4,410,Biodiesel Blend,10.9,Yes
