@@ -28,6 +28,7 @@ class ColumnCSV {
         }
         columnName = columnName.trim().replaceAll("\\s", "").replaceAll("%", "pct")
                 .replaceAll("\\(", "").replaceAll("\\)", "").replaceAll("\\.", "");
+        columnName = columnName.replaceAll("[^a-zA-Z]", "");
         return columnName;
     }
 
