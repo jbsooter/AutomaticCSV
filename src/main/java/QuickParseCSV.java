@@ -26,12 +26,14 @@ public class QuickParseCSV implements ParseCSV{
     }
 
     public void profileCSV()  {
-        String csvName = csvFilePath.substring(csvFilePath.lastIndexOf("/") + 1);
-        String csvNameNoExtension = csvName.substring(0, csvName.lastIndexOf("."));
+        String csvNameNoExtension = csvFilePath.substring(csvFilePath.lastIndexOf("/") + 1);
+        csvNameNoExtension = csvNameNoExtension.substring(0, csvNameNoExtension.lastIndexOf("."));
         String csvClassName = csvNameNoExtension.substring(0,1).toUpperCase() + csvNameNoExtension.substring(1).toLowerCase();
-            try
+
+        try
             {
                 Class.forName(csvClassName);
+                //end profileCSV if csv POJO class exists
                 return;
             }catch(ClassNotFoundException ex)
             {
@@ -44,20 +46,24 @@ public class QuickParseCSV implements ParseCSV{
                 buildPOJO(columns);
             } catch (IOException e) {
                 e.printStackTrace();
+                System.out.println("Attempt to Build Class Failed. ");
             }
-            return;
         }
         public <csvClass> ArrayList<csvClass> readCSV(Class csvClass)
         {
             ArrayList<csvClass> result = new ArrayList<csvClass>();
             ArrayList<ColumnCSV> columns = buildColumns();
 
-
+            //iterate through all ColumnCSV objects for the number of data cells that they hold.
             for(int i = 0; i < columns.get(0).getColumnStringArray().size(); i++){
+                //Holds Parameters to pass to csvClass constructor
                 Object[] parameterization = new Object[columns.size()];
+                //Holds Classes of datatypes to identify correct constructor to instantiate ColumnCSV
                 Class[] datatypes = new Class[columns.size()];
 
+                //Counter for parameterization and datatype index for row
                 int p = 0;
+                //Iterate through columnCSV objects and create parameterization/datatypes for csvClass "row"
                 for(ColumnCSV col: columns)
                 {
                     if(col.getColumnDataType().equals("Integer"))
@@ -75,26 +81,28 @@ public class QuickParseCSV implements ParseCSV{
                         parameterization[p] = col.getColumnStringArray().get(i);
                         datatypes[p] = String.class;
                     }
+                    //increment index of parameterization and datatype
                     p++;
                 }
+
                 Constructor csvConst = null;
+                //retrieve appropriate constructor of csvClass
                 try {
                     csvConst = csvClass.getConstructor(datatypes);
                 } catch (NoSuchMethodException e) {
                     e.printStackTrace();
                 }
+
+                //add new "row" to arrayList
                 try {
                     result.add((csvClass) csvConst.newInstance(parameterization));
-                } catch (InstantiationException e) {
-                    e.printStackTrace();
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
-                } catch (InvocationTargetException e) {
+                } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
                     e.printStackTrace();
                 }
 
             }
-            return (ArrayList<csvClass>) result;
+
+            return result;
         }
 
     private ArrayList<ColumnCSV> buildColumns()
@@ -103,29 +111,41 @@ public class QuickParseCSV implements ParseCSV{
         try {
             fileScnr = new Scanner(new File(csvFilePath));
         } catch (FileNotFoundException e2x) {
-            //Output custom error message?
-            System.out.println("filenotfound");
+            System.out.println("Error: File Not Found");
         }
+
         String headerRow = null;
         if (fileScnr.hasNextLine()) {
             headerRow = fileScnr.nextLine();
         } else {
-            //error no header row
+            System.out.println("ERROR: CSV Not Found. ");
         }
+
+        //reset to top of file
         fileScnr.reset();
+
+        //skip header row
         fileScnr.nextLine();
+
+        //store String[] representation of rows in file
         ArrayList<String[]> rawRowArrays = new ArrayList<>();
 
+        //get String[] representation of ALL rows in file
         while (fileScnr.hasNextLine()) {
             rawRowArrays.add(fileScnr.nextLine().split(","));
         }
 
+        //Scanner for HEADERROW String (Not file)
         Scanner headerScnr = new Scanner(headerRow);
         headerScnr.useDelimiter(",");
 
+        //Store ColumnCSV objects
         ArrayList<ColumnCSV> columns = new ArrayList<>();
+
+        //int representation of column in CSV
         int colIndex = 0;
 
+        //Instantiate all ColumnCSV objects and store in Columns
         while (headerScnr.hasNext()) {
             String colName = headerScnr.next();
 
@@ -136,17 +156,14 @@ public class QuickParseCSV implements ParseCSV{
             currentColumnValues = cleanCells(currentColumnValues);
 
             columns.add(new ColumnCSV(colName, colIndex, currentColumnValues, intuitDatatype(currentColumnValues)));
-            //intuitDatatype(currentColumnValues);
+
             colIndex++;
         }
-        fileScnr.reset();
 
-        for (ColumnCSV c : columns) {
-            System.out.println(c.toString());
-            System.out.println("test");
-        }
         return columns;
     }
+
+    //Logic to determine datatype. Everything is a Double, Integer, or String
     private Object intuitDatatype(ArrayList<String> columnData)
     {
         Boolean integerIndicator = true;
@@ -190,12 +207,14 @@ public class QuickParseCSV implements ParseCSV{
     }
 
     private void buildPOJO(ArrayList<ColumnCSV> columns) throws IOException {
-        String csvName = csvFilePath.substring(csvFilePath.lastIndexOf("/") + 1);
-        String csvNameNoExtension = csvName.substring(0, csvName.lastIndexOf("."));
+        String csvNameNoExtension = csvFilePath.substring(csvFilePath.lastIndexOf("/") + 1);
+        csvNameNoExtension = csvNameNoExtension.substring(0, csvNameNoExtension.lastIndexOf("."));
+        String csvClassName = csvNameNoExtension.substring(0,1).toUpperCase() + csvNameNoExtension.substring(1).toLowerCase();
 
-        csvNameNoExtension = csvNameNoExtension.substring(0, 1).toUpperCase() + csvNameNoExtension.substring(1).toLowerCase();
-        System.out.println(csvNameNoExtension);
-        File csvPojo = new File(String.format("src/main/java/%s%s", csvNameNoExtension, ".java"));
+        //Create file for POJO Structure
+        File csvPojo = new File(String.format("src/main/java/%s%s", csvClassName, ".java"));
+
+        //Create FileWriter
         Writer buildCSVClass = null;
         try {
             buildCSVClass = new FileWriter(csvPojo);
@@ -203,12 +222,15 @@ public class QuickParseCSV implements ParseCSV{
             e.printStackTrace();
         }
 
+        //Write Class Signature to File
         try {
-            buildCSVClass.write(String.format("public class %s {\n", csvNameNoExtension));
+            buildCSVClass.write(String.format("public class %s {\n", csvClassName));
         } catch (IOException e) {
             e.printStackTrace();
         }
 
+
+        //Write Fields to File
         for (ColumnCSV col : columns) {
             try {
                 buildCSVClass.write("private " + col.getColumnDataType()
@@ -218,10 +240,13 @@ public class QuickParseCSV implements ParseCSV{
             }
         }
 
-        buildCSVClass.write(String.format("public %s() {\n\n}\n\n", csvNameNoExtension));
+        //Write default constructor to file
+        buildCSVClass.write(String.format("public %s() {\n\n}\n\n", csvClassName));
 
-        String constructorParameterization = String.format("public %s(", csvNameNoExtension);
+        //Start building parameterized constructor
+        String constructorParameterization = String.format("public %s(", csvClassName);
 
+        //Finish Parameterized Constructor
         int i = 0;
         for (ColumnCSV col : columns) {
             if (i == 0) {
@@ -231,38 +256,44 @@ public class QuickParseCSV implements ParseCSV{
             }
             i++;
         }
-
         constructorParameterization = constructorParameterization + ") {\n";
 
+        //Write paramaterized Constructor Signature to File
         buildCSVClass.write(constructorParameterization);
 
+        //Write paramaterized constructor assignments to file
         for (ColumnCSV col : columns) {
             buildCSVClass.write(String.format("this.%s= %s;\n", col.getColumnName(), col.getColumnName()));
         }
         buildCSVClass.write("}\n\n");
 
+        //write getters and setters to file
         for (ColumnCSV col : columns) {
             buildCSVClass.write(String.format("public %s get%s() {\n return %s;\n}\n\n", col.getColumnDataType(), col.getColumnName(), col.getColumnName()));
             buildCSVClass.write(String.format("public void set%s(%s %s) {\nthis.%s = %s;\n}\n\n", col.getColumnName(), col.getColumnDataType(), col.getColumnName(), col.getColumnName(), col.getColumnName()));
         }
 
+        //write toString signature to File
         buildCSVClass.write("@Override()\npublic String toString() {\nreturn ");
 
+        //Create toString String
         int j = 0;
         for (ColumnCSV col : columns) {
             if (j < columns.size() - 1) {
-                buildCSVClass.write(String.format("\"%s:\" +  %s\n + ", col.getColumnName(), col.getColumnName()));
+                buildCSVClass.write(String.format("\"%s:  \" +  %s\n + ", col.getColumnName(), col.getColumnName()));
             } else {
-                buildCSVClass.write(String.format("\"%s:\" +  %s;\n}\n\n}", col.getColumnName(), col.getColumnName()));
+                buildCSVClass.write(String.format("\"%s:  \" +  %s;\n}\n\n}", col.getColumnName(), col.getColumnName()));
             }
             j++;
 
         }
 
+        //Close FileWriter
         buildCSVClass.close();
 
     }
 
+    //Logic to clean up confusing/illegal characters from cells (Needs to be improved)
     public ArrayList<String> cleanCells(ArrayList<String> currentColumnValues)
     {
         ArrayList<String> cleanValues = new ArrayList<>();
