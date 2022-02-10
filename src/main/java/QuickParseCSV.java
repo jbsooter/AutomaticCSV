@@ -1,6 +1,8 @@
 import java.io.*;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -75,6 +77,45 @@ public class QuickParseCSV implements ParseCSV{
                     {
                         parameterization[p] = Double.parseDouble(col.getColumnStringArray().get(i));
                         datatypes[p] = Double.class;
+                    }
+                    else if(col.getColumnDataType().equals("LocalDateTime"))
+                    {
+                        parameterization[p] = LocalDateTime.parse(col.getColumnStringArray().get(i));
+                        datatypes[p] = LocalDateTime.class;
+                    }
+                    else if(col.getColumnDataType().equals("Boolean"))
+                    {
+                        if(col.getColumnStringArray().get(i).equalsIgnoreCase("True"))
+                        {
+                            parameterization[p] = true;
+                            datatypes[p] = Boolean.class;
+                        }
+                        else if(col.getColumnStringArray().get(i).equalsIgnoreCase("Yes"))
+                        {
+                            parameterization[p] = true;
+                            datatypes[p] = Boolean.class;
+                        }
+                        else
+                        {
+                            try
+                            {
+                                if(Integer.parseInt(col.getColumnStringArray().get(i)) == 1)
+                                {
+                                    parameterization[p] = true;
+                                    datatypes[p] = Boolean.class;
+                                }
+                                else
+                                {
+                                    parameterization[p] = false;
+                                    datatypes[p] = Boolean.class;
+                                }
+                            }
+                            catch(NumberFormatException exInt)
+                            {
+                                parameterization[p] = false;
+                                datatypes[p] = Boolean.class;
+                            }
+                        }
                     }
                     else
                     {
@@ -166,6 +207,93 @@ public class QuickParseCSV implements ParseCSV{
     //Logic to determine datatype. Everything is a Double, Integer, or String
     private Object intuitDatatype(ArrayList<String> columnData)
     {
+        Class cellBestClass = String.class;
+        ArrayList<Class> potentialColumnClass = new ArrayList<>();
+
+        for(String cell: columnData)
+        {
+            cellBestClass = String.class;
+
+            try
+            {
+                Double.parseDouble(cell);
+                cellBestClass = Double.class;
+            }catch(NumberFormatException ex)
+            {
+                if(cell.equalsIgnoreCase("Yes") || cell.equalsIgnoreCase("No"))
+                {
+                    cellBestClass = Boolean.class;
+                }
+                else if(cell.equalsIgnoreCase("True")  || cell.equalsIgnoreCase("False"))
+                {
+                    cellBestClass = Boolean.class;
+                }
+                else
+                {
+                    try
+                    {
+                        LocalDateTime.parse(cell);
+                        cellBestClass = LocalDateTime.class;
+                    }catch(DateTimeParseException exDt)
+                    {
+                        cellBestClass = String.class;
+                    }
+                }
+            }
+
+            if(cellBestClass.equals(Double.class))
+            {
+                try
+                {
+                    Integer.parseInt(cell);
+                    cellBestClass = Integer.class;
+                }catch (NumberFormatException exInt)
+                {
+
+                }
+            }
+
+            if(cellBestClass.equals(Integer.class))
+            {
+                if(Integer.parseInt(cell) == 0 || Integer.parseInt(cell)  == 1)
+                {
+                    cellBestClass = Boolean.class;
+                }
+            }
+
+            potentialColumnClass.add(cellBestClass);
+
+        }
+        System.out.println(potentialColumnClass);
+        if(potentialColumnClass.contains(String.class))
+        {
+            return String.class;
+        }
+        else if(potentialColumnClass.contains(LocalDateTime.class) && !(potentialColumnClass.contains(Integer.class)) && !(potentialColumnClass.contains(Double.class) && !(potentialColumnClass.contains(Boolean.class))))
+        {
+            return LocalDateTime.class;
+        }
+        else if((!(potentialColumnClass.contains(LocalDateTime.class)) && !(potentialColumnClass.contains(Integer.class)) && !(potentialColumnClass.contains(Double.class)) && (potentialColumnClass.contains(Boolean.class))))
+        {
+            System.out.println("Bool");
+            return Boolean.class;
+        }
+        else if(!(potentialColumnClass.contains(LocalDateTime.class)) && (potentialColumnClass.contains(Integer.class) || potentialColumnClass.contains(Double.class)))
+        {
+            if(potentialColumnClass.contains(Double.class))
+            {
+                return Double.class;
+            }
+            else
+            {
+                return Integer.class;
+            }
+        }
+        else
+        {
+            return String.class; //safety
+        }
+        /*
         Boolean integerIndicator = true;
 
         for(String cell: columnData)
@@ -203,6 +331,8 @@ public class QuickParseCSV implements ParseCSV{
             return Double.class;
         }
 
+         */
+
 
     }
 
@@ -220,6 +350,19 @@ public class QuickParseCSV implements ParseCSV{
             buildCSVClass = new FileWriter(csvPojo);
         } catch (IOException e) {
             e.printStackTrace();
+        }
+
+        Boolean localDateTimeImport = false;
+        for(ColumnCSV col: columns)
+        {
+            if(col.getColumnDataType().equals("LocalDateTime"))
+            {
+                localDateTimeImport = true;
+            }
+        }
+        if(localDateTimeImport == true)
+        {
+            buildCSVClass.write("import java.time.LocalDateTime;\n\n");
         }
 
         //Write Class Signature to File
@@ -300,7 +443,7 @@ public class QuickParseCSV implements ParseCSV{
 
         for(String cell: currentColumnValues)
         {
-            cleanValues.add(cell.replaceAll("\"", ""));
+            cleanValues.add(cell.replaceAll("\"", "").trim());
 
         }
         return cleanValues;
