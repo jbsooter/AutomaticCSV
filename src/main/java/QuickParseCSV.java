@@ -96,35 +96,36 @@ public class QuickParseCSV implements ParseCSV{
                         {
                             try
                             {
-                                parameterization[p] = LocalDateTime.parse(col.getColumnStringArray().get(i), DateTimeFormatter.ofPattern("M/d/yyyy"));
+                                parameterization[p] = LocalDate.parse(col.getColumnStringArray().get(i), DateTimeFormatter.ofPattern("M/d/yyyy"));
                                 datatypes[p] = LocalDate.class;
                             }catch(DateTimeParseException exDt2)
                             {
                                 try
                                 {
-                                    parameterization[p] = LocalDateTime.parse(col.getColumnStringArray().get(i), DateTimeFormatter.ofPattern("M/d/yy"));
+                                    parameterization[p] = LocalDate.parse(col.getColumnStringArray().get(i), DateTimeFormatter.ofPattern("M/d/yy"));
                                     datatypes[p] = LocalDate.class;
                                 }catch(DateTimeParseException exDt3)
                                 {
                                     try
                                     {
-                                        parameterization[p] = LocalDateTime.parse(col.getColumnStringArray().get(i), DateTimeFormatter.ofPattern("M-d-yyyy"));
+                                        parameterization[p] = LocalDate.parse(col.getColumnStringArray().get(i), DateTimeFormatter.ofPattern("M-d-yyyy"));
                                         datatypes[p] = LocalDate.class;
                                     }catch(DateTimeParseException exDt4)
                                     {
                                         try
                                         {
-                                            parameterization[p] = LocalDateTime.parse(col.getColumnStringArray().get(i), DateTimeFormatter.ofPattern("M-d-yy"));
+                                            parameterization[p] = LocalDate.parse(col.getColumnStringArray().get(i), DateTimeFormatter.ofPattern("M-d-yy"));
                                             datatypes[p] = LocalDate.class;
                                         }catch(DateTimeParseException exDt5)
                                         {
                                             try
                                             {
-                                                parameterization[p] = LocalDateTime.parse(col.getColumnStringArray().get(i), DateTimeFormatter.ofPattern("yyyy/M/d"));
+                                                parameterization[p] = LocalDate.parse(col.getColumnStringArray().get(i), DateTimeFormatter.ofPattern("yyyy/M/d"));
                                                 datatypes[p] = LocalDate.class;
                                             }catch(DateTimeParseException exDt6)
                                             {
                                                 //should never be reached due to column building steps
+ 
                                             }
                                         }
                                     }
@@ -176,6 +177,7 @@ public class QuickParseCSV implements ParseCSV{
                 }
 
                 Constructor csvConst = null;
+                System.out.println(datatypes.toString());
                 //retrieve appropriate constructor of csvClass
                 try {
                     csvConst = csvClass.getConstructor(datatypes);
@@ -367,7 +369,7 @@ public class QuickParseCSV implements ParseCSV{
         {
             return Boolean.class;
         }
-        else if(!(potentialColumnClass.contains(LocalDateTime.class)) && !(potentialColumnClass.contains(LocalDate.class)) && (potentialColumnClass.contains(Integer.class) || potentialColumnClass.contains(Double.class)))
+        else if(!(potentialColumnClass.contains(LocalDateTime.class)) && !potentialColumnClass.contains(Boolean.class) && !(potentialColumnClass.contains(LocalDate.class)) && ((potentialColumnClass.contains(Integer.class) || potentialColumnClass.contains(Double.class))))
         {
             if(potentialColumnClass.contains(Double.class))
             {
