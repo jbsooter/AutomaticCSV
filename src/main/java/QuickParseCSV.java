@@ -341,6 +341,17 @@ public class QuickParseCSV implements ParseCSV{
         csvNameNoExtension = csvNameNoExtension.substring(0, csvNameNoExtension.lastIndexOf("."));
         String csvClassName = csvNameNoExtension.substring(0,1).toUpperCase() + csvNameNoExtension.substring(1).toLowerCase();
 
+        //ensure no duplicate named columns
+        ArrayList<String> colNames = new ArrayList<>();
+        for(ColumnCSV col: columns)
+        {
+            if(colNames.contains(col.getColumnName()))
+            {
+                col.setColumnName(col.getColumnName() + "I");
+            }
+            colNames.add(col.getColumnName());
+        }
+
         //Create file for POJO Structure
         File csvPojo = new File(String.format("src/main/java/%s%s", csvClassName, ".java"));
 

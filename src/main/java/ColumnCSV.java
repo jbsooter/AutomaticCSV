@@ -29,7 +29,17 @@ class ColumnCSV {
         }
         columnName = columnName.trim().replaceAll("\\s", "").replaceAll("%", "pct")
                 .replaceAll("\\(", "").replaceAll("\\)", "").replaceAll("\\.", "");
-        columnName = columnName.replaceAll("[^a-zA-Z]", "");
+        columnName = columnName.replaceAll("[^a-zA-Z]", ""); //replace any char that is not a-zA-Z
+
+        if((new JavaKeywords().getJAVA_KEYWORDS()).contains(columnName))
+        {
+            columnName = columnName + "_JavaKeyword";
+        }
+
+        if(columnName.equals(""))
+        {
+            columnName = columnName + "NoNameColumn";
+        }
         return columnName;
     }
 
