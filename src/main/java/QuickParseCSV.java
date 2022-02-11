@@ -1,7 +1,10 @@
 import java.io.*;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.time.DateTimeException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Scanner;
@@ -83,6 +86,52 @@ public class QuickParseCSV implements ParseCSV{
                         parameterization[p] = LocalDateTime.parse(col.getColumnStringArray().get(i));
                         datatypes[p] = LocalDateTime.class;
                     }
+                    else if(col.getColumnDataType().equals("LocalDate"))
+                    {
+                        try
+                        {
+                            parameterization[p] = LocalDate.parse(col.getColumnStringArray().get(i));
+                            datatypes[p] = LocalDate.class;
+                        }catch(DateTimeParseException exDt)
+                        {
+                            try
+                            {
+                                parameterization[p] = LocalDateTime.parse(col.getColumnStringArray().get(i), DateTimeFormatter.ofPattern("MM/dd/yyyy"));
+                                datatypes[p] = LocalDate.class;
+                            }catch(DateTimeParseException exDt2)
+                            {
+                                try
+                                {
+                                    parameterization[p] = LocalDateTime.parse(col.getColumnStringArray().get(i), DateTimeFormatter.ofPattern("MM/dd/yy"));
+                                    datatypes[p] = LocalDate.class;
+                                }catch(DateTimeParseException exDt3)
+                                {
+                                    try
+                                    {
+                                        parameterization[p] = LocalDateTime.parse(col.getColumnStringArray().get(i), DateTimeFormatter.ofPattern("MM-dd-yyyy"));
+                                        datatypes[p] = LocalDate.class;
+                                    }catch(DateTimeParseException exDt4)
+                                    {
+                                        try
+                                        {
+                                            parameterization[p] = LocalDateTime.parse(col.getColumnStringArray().get(i), DateTimeFormatter.ofPattern("MM-dd-yy"));
+                                            datatypes[p] = LocalDate.class;
+                                        }catch(DateTimeParseException exDt5)
+                                        {
+                                            try
+                                            {
+                                                parameterization[p] = LocalDateTime.parse(col.getColumnStringArray().get(i), DateTimeFormatter.ofPattern("yyyy/MM/dd"));
+                                                datatypes[p] = LocalDate.class;
+                                            }catch(DateTimeParseException exDt6)
+                                            {
+                                                //should never be reached due to column building steps
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                     else if(col.getColumnDataType().equals("Boolean"))
                     {
                         if(col.getColumnStringArray().get(i).equalsIgnoreCase("True"))
@@ -162,12 +211,6 @@ public class QuickParseCSV implements ParseCSV{
             System.out.println("ERROR: CSV Not Found. ");
         }
 
-        //reset to top of file
-        fileScnr.reset();
-
-        //skip header row
-        fileScnr.nextLine();
-
         //store String[] representation of rows in file
         ArrayList<String[]> rawRowArrays = new ArrayList<>();
 
@@ -236,7 +279,51 @@ public class QuickParseCSV implements ParseCSV{
                         cellBestClass = LocalDateTime.class;
                     }catch(DateTimeParseException exDt)
                     {
-                        cellBestClass = String.class;
+                        try
+                        {
+                            LocalDate.parse(cell);
+                            cellBestClass = LocalDate.class;
+                        }catch(DateTimeParseException exD)
+                        {
+                            try
+                            {
+                                LocalDate.parse(cell, DateTimeFormatter.ofPattern("MM/dd/yyyy"));
+                                cellBestClass = LocalDate.class;
+                            }catch(DateTimeParseException exD2)
+                            {
+                                try
+                                {
+                                    LocalDate.parse(cell, DateTimeFormatter.ofPattern("MM/dd/yy"));
+                                    cellBestClass = LocalDate.class;
+                                }catch(DateTimeParseException exD3)
+                                {
+                                    try
+                                    {
+                                        LocalDate.parse(cell, DateTimeFormatter.ofPattern("MM-dd-yyyy"));
+                                        cellBestClass = LocalDate.class;
+                                    }catch(DateTimeParseException exD4)
+                                    {
+                                        try
+                                        {
+                                            LocalDate.parse(cell, DateTimeFormatter.ofPattern("MM-dd-yy"));
+                                            cellBestClass = LocalDate.class;
+                                        }catch(DateTimeException exD5)
+                                        {
+                                            try
+                                            {
+                                                LocalDate.parse(cell, DateTimeFormatter.ofPattern("yyyy/MM/dd"));
+                                                cellBestClass = LocalDate.class;
+                                            }catch(DateTimeException exD6)
+                                            {
+                                                System.out.println("FOUNDIT");
+                                                cellBestClass = String.class;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                        }
                     }
                 }
             }
@@ -269,16 +356,20 @@ public class QuickParseCSV implements ParseCSV{
         {
             return String.class;
         }
-        else if(potentialColumnClass.contains(LocalDateTime.class) && !(potentialColumnClass.contains(Integer.class)) && !(potentialColumnClass.contains(Double.class) && !(potentialColumnClass.contains(Boolean.class))))
+        else if(potentialColumnClass.contains(LocalDateTime.class) && !(potentialColumnClass.contains(LocalDate.class)) && !(potentialColumnClass.contains(Integer.class)) && !(potentialColumnClass.contains(Double.class) && !(potentialColumnClass.contains(Boolean.class))))
         {
             return LocalDateTime.class;
         }
-        else if((!(potentialColumnClass.contains(LocalDateTime.class)) && !(potentialColumnClass.contains(Integer.class)) && !(potentialColumnClass.contains(Double.class)) && (potentialColumnClass.contains(Boolean.class))))
+        else if(!(potentialColumnClass.contains(LocalDateTime.class)) && (potentialColumnClass.contains(LocalDate.class)) && !(potentialColumnClass.contains(Integer.class)) && !(potentialColumnClass.contains(Double.class) && !(potentialColumnClass.contains(Boolean.class))))
+        {
+            return LocalDate.class;
+        }
+        else if((!(potentialColumnClass.contains(LocalDateTime.class)) &&  !(potentialColumnClass.contains(LocalDate.class) && !(potentialColumnClass.contains(Integer.class)) && !(potentialColumnClass.contains(Double.class)) && (potentialColumnClass.contains(Boolean.class)))))
         {
             System.out.println("Bool");
             return Boolean.class;
         }
-        else if(!(potentialColumnClass.contains(LocalDateTime.class)) && (potentialColumnClass.contains(Integer.class) || potentialColumnClass.contains(Double.class)))
+        else if(!(potentialColumnClass.contains(LocalDateTime.class)) && !(potentialColumnClass.contains(LocalDate.class)) && (potentialColumnClass.contains(Integer.class) || potentialColumnClass.contains(Double.class)))
         {
             if(potentialColumnClass.contains(Double.class))
             {
@@ -293,46 +384,6 @@ public class QuickParseCSV implements ParseCSV{
         {
             return String.class; //safety
         }
-        /*
-        Boolean integerIndicator = true;
-
-        for(String cell: columnData)
-        {
-            Double doubleCell = null;
-            Integer integerCell = null;
-
-
-            try
-            {
-                integerCell =  Integer.parseInt(cell);
-
-            }
-            catch(NumberFormatException ex)
-            {
-                try
-                {
-                    doubleCell = Double.parseDouble(cell);
-                }
-                catch(NumberFormatException ex2)
-                {
-                    return String.class;
-                }
-                integerIndicator = false;
-
-
-            }
-        }
-        if(integerIndicator)
-        {
-            return Integer.class;
-        }
-        else
-        {
-            return Double.class;
-        }
-
-         */
-
 
     }
 
@@ -374,6 +425,21 @@ public class QuickParseCSV implements ParseCSV{
         if(localDateTimeImport == true)
         {
             buildCSVClass.write("import java.time.LocalDateTime;\n\n");
+        }
+
+        //check localdate import
+        Boolean localDateImport = false;
+        for(ColumnCSV col: columns)
+        {
+            if(col.getColumnDataType().equals("LocalDate"))
+            {
+                localDateImport = true;
+            }
+        }
+
+        if(localDateImport == true)
+        {
+            buildCSVClass.write("import java.time.LocalDate;\n\n");
         }
 
         //Write Class Signature to File
