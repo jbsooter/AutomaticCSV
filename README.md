@@ -44,7 +44,7 @@ demo.profileCSV();
 6. Read in your CSV file by adding this line. There is no need to remove the profileCSV() line. 
 
 ```Java
-ArrayList<GeneratedClass> CSVasObjects = demo.readCSV(GeneratedClass.class);
+ArrayList<GeneratedClass> CSVasObjects = demo.readCSV();
 ```
 
 7. Done! Your CSV is represented using the POJO structure. In addition, QuickCSV supports users adding fields and methods to the generated class so long as the original fields and constructer matching the CSV file are maintained. (Read more details below). 
@@ -58,7 +58,7 @@ import java.util.ArrayList;
       {
         QuickParseCSV demo = new QuickParseCSV("/path/to/csv");
         demo.profileCSV();
-        ArrayList<GeneratedClass> CSVasObjects = demo.readCSV(GeneratedClass.class);
+        ArrayList<GeneratedClass> CSVasObjects = demo.readCSV();
       }
  }
 ```
