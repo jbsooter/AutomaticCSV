@@ -54,6 +54,7 @@ public class QuickParseCSV implements ParseCSV{
                 System.out.println("Attempt to Build Class Failed. ");
             }
         }
+
         public <csvClass> ArrayList<csvClass> readCSV()
         {
             ArrayList<csvClass> result = new ArrayList<csvClass>();
@@ -496,9 +497,9 @@ public class QuickParseCSV implements ParseCSV{
         int j = 0;
         for (ColumnCSV col : columns) {
             if (j < columns.size() - 1) {
-                buildCSVClass.write(String.format("\"%s:  \" +  %s\n + ", col.getColumnName(), col.getColumnName()));
+                buildCSVClass.write(String.format("\"%s: \" +  %s + \"  \"\n + ", col.getColumnName(), col.getColumnName()));
             } else {
-                buildCSVClass.write(String.format("\"%s:  \" +  %s;\n}\n\n}", col.getColumnName(), col.getColumnName()));
+                buildCSVClass.write(String.format("\"%s: \" +  %s + \"  \";\n}\n\n}", col.getColumnName(), col.getColumnName()));
             }
             j++;
 
