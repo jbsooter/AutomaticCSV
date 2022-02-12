@@ -15,6 +15,8 @@ public class QuickParseCSV implements ParseCSV{
 
     private File csvFileObject;
 
+    private String csvClassName;
+
     public QuickParseCSV()
     {
 
@@ -23,18 +25,16 @@ public class QuickParseCSV implements ParseCSV{
     public QuickParseCSV(String csvFilePath) {
         this.csvFilePath = csvFilePath;
         this.csvFileObject = new File(csvFilePath);
+        this.csvClassName = createClassName(csvFilePath);
     }
 
     public QuickParseCSV(File csvFileObject) {
         this.csvFileObject = csvFileObject;
         this.csvFilePath = csvFileObject.toString();
+        this.csvClassName = createClassName(csvFilePath);
     }
 
     public void profileCSV()  {
-        String csvNameNoExtension = csvFilePath.substring(csvFilePath.lastIndexOf("/") + 1);
-        csvNameNoExtension = csvNameNoExtension.substring(0, csvNameNoExtension.lastIndexOf("."));
-        String csvClassName = csvNameNoExtension.substring(0,1).toUpperCase() + csvNameNoExtension.substring(1).toLowerCase();
-
         try
             {
                 Class.forName(csvClassName);
@@ -54,7 +54,7 @@ public class QuickParseCSV implements ParseCSV{
                 System.out.println("Attempt to Build Class Failed. ");
             }
         }
-        public <csvClass> ArrayList<csvClass> readCSV(Class csvClass)
+        public <csvClass> ArrayList<csvClass> readCSV()
         {
             ArrayList<csvClass> result = new ArrayList<csvClass>();
             ArrayList<ColumnCSV> columns = buildColumns();
@@ -177,11 +177,11 @@ public class QuickParseCSV implements ParseCSV{
                 }
 
                 Constructor csvConst = null;
-                System.out.println(datatypes.toString());
+
                 //retrieve appropriate constructor of csvClass
                 try {
-                    csvConst = csvClass.getConstructor(datatypes);
-                } catch (NoSuchMethodException e) {
+                    csvConst = Class.forName(csvClassName).getConstructor(datatypes);
+                } catch (NoSuchMethodException | ClassNotFoundException e) {
                     e.printStackTrace();
                 }
 
@@ -388,10 +388,6 @@ public class QuickParseCSV implements ParseCSV{
     }
 
     private void buildPOJO(ArrayList<ColumnCSV> columns) throws IOException {
-        String csvNameNoExtension = csvFilePath.substring(csvFilePath.lastIndexOf("/") + 1);
-        csvNameNoExtension = csvNameNoExtension.substring(0, csvNameNoExtension.lastIndexOf("."));
-        String csvClassName = csvNameNoExtension.substring(0,1).toUpperCase() + csvNameNoExtension.substring(1).toLowerCase();
-
         //ensure no duplicate named columns
         ArrayList<String> colNames = new ArrayList<>();
         for(ColumnCSV col: columns)
@@ -532,6 +528,14 @@ public class QuickParseCSV implements ParseCSV{
 
 
         return cleanValues;
+    }
+
+    private String createClassName(String csvFilePath)
+    {
+        String csvNameNoExtension = csvFilePath.substring(csvFilePath.lastIndexOf("/") + 1);
+        csvNameNoExtension = csvNameNoExtension.substring(0, csvNameNoExtension.lastIndexOf("."));
+        String csvClassName = csvNameNoExtension.substring(0,1).toUpperCase() + csvNameNoExtension.substring(1).toLowerCase();
+        return csvClassName;
     }
 
     public String getCsvFilePath() {

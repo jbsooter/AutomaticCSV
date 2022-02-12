@@ -5,6 +5,6 @@ public interface ParseCSV {
 
     void profileCSV();
 
-    <structureType> ArrayList<structureType> readCSV(Class structureClass);
+    <structureType> ArrayList<structureType> readCSV();
 
 }
