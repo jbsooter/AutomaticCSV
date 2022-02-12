@@ -28,8 +28,6 @@ public class QuickWriteCSV implements WriteCSV{
 
         Field[] fieldsToWrite = objectsToWrite.get(0).getClass().getDeclaredFields();
 
-        System.out.println(fieldsToWrite[0].toString());
-
         for(int i = 0; i < fieldsToWrite.length; i++)
         {
             fieldsToWrite[i].setAccessible(true);

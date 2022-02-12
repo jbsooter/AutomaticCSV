@@ -125,7 +125,7 @@ public class QuickParseCSV implements ParseCSV{
                                             }catch(DateTimeParseException exDt6)
                                             {
                                                 //should never be reached due to column building steps
- 
+
                                             }
                                         }
                                     }
@@ -352,7 +352,7 @@ public class QuickParseCSV implements ParseCSV{
             potentialColumnClass.add(cellBestClass);
 
         }
-        System.out.println(potentialColumnClass);
+        //System.out.println(potentialColumnClass);
         if(potentialColumnClass.contains(String.class))
         {
             return String.class;
