@@ -1,6 +1,9 @@
 import java.io.*;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Type;
 import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -8,6 +11,8 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class QuickParseCSV implements ParseCSV{
 
@@ -55,6 +60,148 @@ public class QuickParseCSV implements ParseCSV{
             }
         }
 
+        public <csvClass> ArrayList<csvClass> readCSVNew()
+        {
+            Class CSVClass = null;
+            try {
+                CSVClass = Class.forName(csvClassName);
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+                System.out.println("hit");
+            }
+
+            ArrayList<csvClass> results = new ArrayList<>();
+
+            Field[] fields = CSVClass.getDeclaredFields();
+
+            ArrayList<Class> csvField = new ArrayList<>();
+            for(Field f: fields)
+            {
+                if(f.isAnnotationPresent(QuickCSVField.class))
+                {
+                    csvField.add(f.getType()); //getType required to get the actual class of type
+                }
+            }
+            Scanner fileScnr = null;
+            try {
+                fileScnr = new Scanner(new File(csvFilePath));
+            } catch (FileNotFoundException e2x) {
+                System.out.println("Error: File Not Found");
+            }
+
+            String headerRow = null;
+            if (fileScnr.hasNextLine()) {
+                headerRow = fileScnr.nextLine();
+            } else {
+                System.out.println("ERROR: CSV Not Found. ");
+            }
+
+            //store String[] representation of rows in file
+            ArrayList<String[]> rawRowArrays = new ArrayList<>();
+
+            //get String[] representation of ALL rows in file
+            while (fileScnr.hasNextLine()) {
+                rawRowArrays.add(fileScnr.nextLine().split(","));
+            }
+
+            //Scanner for HEADERROW String (Not file)
+            Scanner headerScnr = new Scanner(headerRow);
+            headerScnr.useDelimiter(",");
+
+            //Store ColumnCSV objects
+            ArrayList<ColumnCSV> columns = new ArrayList<>();
+
+            for(String[] row: rawRowArrays)
+            {
+                Object[] parsedRow = new Object[csvField.size()];
+                int col = 0;
+                for(Class c: csvField)
+                {
+                    String cleanCell = cleanCell(row[col]);
+                    if(c.equals(Double.class))
+                    {
+                        parsedRow[col] = Double.parseDouble(cleanCell);
+                    }
+                    else if(c.equals(String.class))
+                    {
+                        parsedRow[col] = cleanCell;
+                    }
+                    else if(c.equals(Integer.class))
+                    {
+                        parsedRow[col] = Integer.parseInt(cleanCell);
+                    }
+                    else if(c.equals(LocalDateTime.class))
+                    {
+                        parsedRow[col] = LocalDateTime.parse(cleanCell);
+                    }
+                    else if(c.equals(Boolean.class))
+                    {
+                        if(cleanCell.equalsIgnoreCase("yes") || cleanCell.equalsIgnoreCase("true") || checkIntTrue(cleanCell))
+                        {
+                            parsedRow[col] = true;
+                        }
+                        else
+                        {
+                            parsedRow[col] = false;
+                        }
+                    }
+                    else
+                    {
+                        try
+                        {
+                            parsedRow[col] = LocalDate.parse(cleanCell);
+
+                        }catch(DateTimeParseException exDt) {
+                            try {
+                                parsedRow[col] = LocalDate.parse(cleanCell, DateTimeFormatter.ofPattern("M/d/yyyy"));
+                            } catch (DateTimeParseException exDt2) {
+                                try {
+                                    parsedRow[col] = LocalDate.parse(cleanCell, DateTimeFormatter.ofPattern("M/d/yy"));
+
+                                } catch (DateTimeParseException exDt3) {
+                                    try {
+                                        parsedRow[col] = LocalDate.parse(cleanCell, DateTimeFormatter.ofPattern("M-d-yyyy"));
+                                    } catch (DateTimeParseException exDt4) {
+                                        try {
+                                            parsedRow[col] = LocalDate.parse(cleanCell, DateTimeFormatter.ofPattern("M-d-yy"));
+                                        } catch (DateTimeParseException exDt5) {
+                                            try {
+                                                parsedRow[col] = LocalDate.parse(cleanCell, DateTimeFormatter.ofPattern("yyyy/M/d"));
+                                            } catch (DateTimeParseException exDt6) {
+                                                //should never be reached due to column building steps
+
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                    }
+                    col += 1;
+                }
+
+                Constructor[] con = CSVClass.getConstructors();
+
+                for(Constructor c: con)
+                {
+                    if(c.isAnnotationPresent(QuickCSVConstructor.class))
+                    {
+                        try {
+                            results.add((csvClass) c.newInstance(parsedRow));
+                        } catch (InstantiationException e) {
+                            e.printStackTrace();
+                        } catch (IllegalAccessException e) {
+                            e.printStackTrace();
+                        } catch (InvocationTargetException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }
+
+            return results;
+        }
         public <csvClass> ArrayList<csvClass> readCSV()
         {
             ArrayList<csvClass> result = new ArrayList<csvClass>();
@@ -450,6 +597,7 @@ public class QuickParseCSV implements ParseCSV{
         //Write Fields to File
         for (ColumnCSV col : columns) {
             try {
+                buildCSVClass.write("@QuickCSVField\n");
                 buildCSVClass.write("private " + col.getColumnDataType()
                         + String.format(" %s;\n\n", col.getColumnName()));
             } catch (IOException e) {
@@ -473,7 +621,8 @@ public class QuickParseCSV implements ParseCSV{
             }
             i++;
         }
-        constructorParameterization = constructorParameterization + ") {\n";
+        //TODO: Annotate
+        constructorParameterization = "@QuickCSVConstructor\n" + constructorParameterization + ") {\n";
 
         //Write paramaterized Constructor Signature to File
         buildCSVClass.write(constructorParameterization);
@@ -531,6 +680,18 @@ public class QuickParseCSV implements ParseCSV{
         return cleanValues;
     }
 
+    private String cleanCell(String cell)
+    {
+        String correctedCell = cell.replaceAll("\"", "").trim();
+        if(correctedCell.equals(""))
+        {
+            correctedCell = "NaN";
+
+        }
+
+        return correctedCell;
+    }
+
     private String createClassName(String csvFilePath)
     {
         String csvNameNoExtension = csvFilePath.substring(csvFilePath.lastIndexOf("/") + 1);
@@ -539,6 +700,54 @@ public class QuickParseCSV implements ParseCSV{
         return csvClassName;
     }
 
+    private String cleanColumnName(String columnName) {
+        Pattern p = Pattern.compile("\\d+");
+        Matcher m = p.matcher(columnName);
+        while(m.find())
+        {
+            columnName = columnName.replace(m.group(), EnglishNumberToWords.convert(Long.parseLong( m.group())));
+        }
+        columnName = columnName.trim().replaceAll("\\s", "").replaceAll("%", "pct")
+                .replaceAll("\\(", "").replaceAll("\\)", "").replaceAll("\\.", "");
+        columnName = columnName.replaceAll("[^a-zA-Z]", ""); //replace any char that is not a-zA-Z
+
+        if((new JavaKeywords().getJAVA_KEYWORDS()).contains(columnName))
+        {
+            columnName = columnName + "_JavaKeyword";
+        }
+
+        if(columnName.equals(""))
+        {
+            columnName = columnName + "NoNameColumn";
+        }
+        return columnName;
+    }
+
+    public String colIncrement(String colName)
+    {
+        return colName+"I";
+    }
+
+    public boolean checkIntTrue(String cell)
+    {
+        Integer intCell;
+        try
+        {
+            intCell = Integer.parseInt(cell);
+        }catch(NumberFormatException ex)
+        {
+            intCell = 0;
+        }
+
+        if(intCell == 1)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
     public String getCsvFilePath() {
         return csvFilePath;
     }
