@@ -67,33 +67,33 @@ public class QuickParseCSV implements ParseCSV{
                 CSVClass = Class.forName(csvClassName);
             } catch (ClassNotFoundException e) {
                 e.printStackTrace();
-                System.out.println("hit");
             }
 
             ArrayList<csvClass> results = new ArrayList<>();
 
             Field[] fields = CSVClass.getDeclaredFields();
 
-            ArrayList<Class> csvField = new ArrayList<>();
+            ArrayList<Class> csvFields = new ArrayList<>();
             for(Field f: fields)
             {
                 if(f.isAnnotationPresent(QuickCSVField.class))
                 {
-                    csvField.add(f.getType()); //getType required to get the actual class of type
+                    csvFields.add(f.getType()); //getType required to get the actual class of type
                 }
             }
+
             Scanner fileScnr = null;
             try {
                 fileScnr = new Scanner(new File(csvFilePath));
             } catch (FileNotFoundException e2x) {
-                System.out.println("Error: File Not Found");
+                System.out.println("ERROR: CSV File Not Found. Check your File Path. ");
             }
 
             String headerRow = null;
             if (fileScnr.hasNextLine()) {
                 headerRow = fileScnr.nextLine();
             } else {
-                System.out.println("ERROR: CSV Not Found. ");
+                System.out.println("ERROR: CSV File Not Found. Check your File Path. ");
             }
 
             //store String[] representation of rows in file
@@ -108,14 +108,13 @@ public class QuickParseCSV implements ParseCSV{
             Scanner headerScnr = new Scanner(headerRow);
             headerScnr.useDelimiter(",");
 
-            //Store ColumnCSV objects
-            ArrayList<ColumnCSV> columns = new ArrayList<>();
-
             for(String[] row: rawRowArrays)
             {
-                Object[] parsedRow = new Object[csvField.size()];
+                //store parsed cell values to create csvClass object
+                Object[] parsedRow = new Object[csvFields.size()];
+
                 int col = 0;
-                for(Class c: csvField)
+                for(Class c: csvFields)
                 {
                     String cleanCell = cleanCell(row[col]);
                     if(c.equals(Double.class))
@@ -136,7 +135,7 @@ public class QuickParseCSV implements ParseCSV{
                     }
                     else if(c.equals(Boolean.class))
                     {
-                        if(cleanCell.equalsIgnoreCase("yes") || cleanCell.equalsIgnoreCase("true") || checkIntTrue(cleanCell))
+                        if(cleanCell.equalsIgnoreCase("yes") || cleanCell.equalsIgnoreCase("true") || checkIntTrue(cleanCell)) //checkint true to take care of integer bool
                         {
                             parsedRow[col] = true;
                         }
@@ -181,8 +180,10 @@ public class QuickParseCSV implements ParseCSV{
                     col += 1;
                 }
 
+                //get all constructors of class CSVClass
                 Constructor[] con = CSVClass.getConstructors();
 
+                //identify the constructor for the CSV data by annotation
                 for(Constructor c: con)
                 {
                     if(c.isAnnotationPresent(QuickCSVConstructor.class))
@@ -199,7 +200,7 @@ public class QuickParseCSV implements ParseCSV{
                     }
                 }
             }
-
+            //return arrayList of csvClass objects
             return results;
         }
         public <csvClass> ArrayList<csvClass> readCSV()
