@@ -383,15 +383,20 @@ public class QuickParseCSV implements ParseCSV{
             String colName = headerScnr.next();
 
             ArrayList<String> currentColumnValues = new ArrayList<>();
+
+
             for (int i = 0; i < rawRowArrays.size(); i++) {
                 currentColumnValues.add(rawRowArrays.get(i)[colIndex]);
             }
             currentColumnValues = cleanCells(currentColumnValues);
 
-            columns.add(new ColumnCSV(colName, colIndex, currentColumnValues, intuitDatatype(currentColumnValues)));
+            columns.add(new ColumnCSV(colName, colIndex, currentColumnValues));
 
             colIndex++;
         }
+
+        //parallelize datatype intuition
+        columns.parallelStream().forEach(columnCSV -> {columnCSV.setColumnDataType(intuitDatatype((ArrayList<String>) columnCSV.getColumnStringArray()));});
 
         return columns;
     }
