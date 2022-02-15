@@ -4,6 +4,6 @@ public interface ParseCSV {
 
     ArrayList<Object> profileCSV();
 
-    <structureType> ArrayList<structureType> readCSV();
+    <structureType> ArrayList<structureType> readCSV(Class CSVClass);
 
 }

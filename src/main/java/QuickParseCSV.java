@@ -47,9 +47,9 @@ public class QuickParseCSV implements ParseCSV{
         try
             {
                 //if class already exists>>>
-                Class.forName(csvClassName);
+                Class CSVClass = Class.forName(csvClassName);
                 System.out.println("CLASS EXISTS");
-                readCSV();
+                return readCSV(CSVClass);
             }catch(ClassNotFoundException ex)
             {
                 System.out.println("Generating Java Class....");
@@ -236,8 +236,9 @@ public class QuickParseCSV implements ParseCSV{
 
         return result;
     }
-        public <csvClass> ArrayList<csvClass> readCSV()
+        public <csvClass> ArrayList<csvClass> readCSV(Class CSVClass)
         {
+            /*
             Class CSVClass = null;
             try {
                 CSVClass = Class.forName(csvClassName);
@@ -248,6 +249,8 @@ public class QuickParseCSV implements ParseCSV{
                 //e.printStackTrace();
                 return null;
             }
+
+             */
 
             ArrayList<csvClass> results = new ArrayList<>();
 
