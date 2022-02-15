@@ -2,7 +2,7 @@ import java.util.ArrayList;
 
 public interface ParseCSV {
 
-    ArrayList<Object> profileCSV();
+    <csvClass> ArrayList<csvClass> profileCSV();
 
     <structureType> ArrayList<structureType> readCSV(Class CSVClass);
 
