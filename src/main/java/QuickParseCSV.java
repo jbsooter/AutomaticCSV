@@ -42,7 +42,7 @@ public class QuickParseCSV implements ParseCSV{
         this.csvClassName = createClassName(csvFilePath);
     }
 
-    public ArrayList<Object> profileCSV()  {
+    public <T> ArrayList<T> profileCSV()  {
 
         try
             {
