@@ -170,7 +170,6 @@ public class QuickParseCSV implements ParseCSV{
                                                 parsedRow[col] = LocalDate.parse(cleanCell, DateTimeFormatter.ofPattern("yyyy/M/d"));
                                             } catch (DateTimeParseException exDt6) {
                                                 //should never be reached due to column building steps
-
                                             }
                                         }
                                     }
@@ -591,11 +590,6 @@ public class QuickParseCSV implements ParseCSV{
             columnName = columnName + "NoNameColumn";
         }
         return columnName;
-    }
-
-    public String colIncrement(String colName)
-    {
-        return colName+"I";
     }
 
     public boolean checkIntTrue(String cell)
