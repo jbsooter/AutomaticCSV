@@ -390,7 +390,7 @@ public class QuickParseCSV implements ParseCSV{
             }
             currentColumnValues = cleanCells(currentColumnValues);
 
-            columns.add(new ColumnCSV(colName, colIndex, currentColumnValues));
+            columns.add(new ColumnCSV(javaQualifiedName(colName), colIndex, currentColumnValues));
 
             colIndex++;
         }
@@ -701,10 +701,14 @@ public class QuickParseCSV implements ParseCSV{
         String csvNameNoExtension = csvFilePath.substring(csvFilePath.lastIndexOf("/") + 1);
         csvNameNoExtension = csvNameNoExtension.substring(0, csvNameNoExtension.lastIndexOf("."));
         String csvClassName = csvNameNoExtension.substring(0,1).toUpperCase() + csvNameNoExtension.substring(1).toLowerCase();
+
+
+        //remove unqualifiedchar
+        csvClassName = javaQualifiedName(csvClassName);
         return csvClassName;
     }
 
-    private String cleanColumnName(String columnName) {
+    private String javaQualifiedName(String columnName) {
         Pattern p = Pattern.compile("\\d+");
         Matcher m = p.matcher(columnName);
         while(m.find())

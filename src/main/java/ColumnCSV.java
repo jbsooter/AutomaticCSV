@@ -14,32 +14,9 @@ class ColumnCSV {
 
     public ColumnCSV(String columnName, Integer columnIndex, List<String> columnStringArray) {
         //this.columnName = columnName.replaceAll("[^a-zA-Z]+", " ").trim().replaceAll("\\s", "");
-        this.columnName = cleanColumnName(columnName);
+        this.columnName = columnName;
         this.columnIndex = columnIndex;
         this.columnStringArray = columnStringArray;
-    }
-
-    private String cleanColumnName(String columnName) {
-        Pattern p = Pattern.compile("\\d+");
-        Matcher m = p.matcher(columnName);
-        while(m.find())
-        {
-            columnName = columnName.replace(m.group(), EnglishNumberToWords.convert(Long.parseLong( m.group())));
-        }
-        columnName = columnName.trim().replaceAll("\\s", "").replaceAll("%", "pct")
-                .replaceAll("\\(", "").replaceAll("\\)", "").replaceAll("\\.", "");
-        columnName = columnName.replaceAll("[^a-zA-Z]", ""); //replace any char that is not a-zA-Z
-
-        if((new JavaKeywords().getJAVA_KEYWORDS()).contains(columnName))
-        {
-            columnName = columnName + "_JavaKeyword";
-        }
-
-        if(columnName.equals(""))
-        {
-            columnName = columnName + "NoNameColumn";
-        }
-        return columnName;
     }
 
 
