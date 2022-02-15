@@ -1,3 +1,7 @@
+import javax.tools.JavaCompiler;
+import javax.tools.StandardJavaFileManager;
+import javax.tools.StandardLocation;
+import javax.tools.ToolProvider;
 import java.io.*;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -8,6 +12,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -37,16 +42,20 @@ public class QuickParseCSV implements ParseCSV{
         this.csvClassName = createClassName(csvFilePath);
     }
 
-    public void profileCSV()  {
+    public ArrayList<Object> profileCSV()  {
+
         try
             {
+                //if class already exists>>>
                 Class.forName(csvClassName);
-                //end profileCSV if csv POJO class exists
-                return;
+                System.out.println("CLASS EXISTS");
+                readCSV();
             }catch(ClassNotFoundException ex)
             {
                 System.out.println("Generating Java Class....");
             }
+
+
 
             ArrayList<ColumnCSV> columns = buildColumns();
 
@@ -56,8 +65,177 @@ public class QuickParseCSV implements ParseCSV{
                 e.printStackTrace();
                 System.out.println("Attempt to Build Class Failed. ");
             }
+
+        JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+
+        StandardJavaFileManager fileManager = compiler.getStandardFileManager(
+                null, null, null);
+        try {
+            fileManager.setLocation(StandardLocation.CLASS_OUTPUT, Arrays
+                    .asList(new File("build/classes/java/main/")));
+        } catch (IOException e) {
+            e.printStackTrace();
         }
 
+        boolean success = compiler.getTask(null, fileManager, null, null, null,
+                        fileManager.getJavaFileObjectsFromFiles(Arrays.asList(new File(String.format("src/main/java/%s.java", csvClassName)))))
+                .call();
+        try {
+            fileManager.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        try{
+            Class.forName(csvClassName);
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        return readCSVEmbedded(columns);
+        }
+    public <csvClass> ArrayList<csvClass> readCSVEmbedded(ArrayList<ColumnCSV> columns)
+    {
+        ArrayList<csvClass> result = new ArrayList<csvClass>();
+        //ArrayList<ColumnCSV> columns = buildColumns();
+
+        //iterate through all ColumnCSV objects for the number of data cells that they hold.
+        for(int i = 0; i < columns.get(0).getColumnStringArray().size(); i++){
+            //Holds Parameters to pass to csvClass constructor
+            Object[] parameterization = new Object[columns.size()];
+            //Holds Classes of datatypes to identify correct constructor to instantiate ColumnCSV
+            Class[] datatypes = new Class[columns.size()];
+
+            //Counter for parameterization and datatype index for row
+            int p = 0;
+            //Iterate through columnCSV objects and create parameterization/datatypes for csvClass "row"
+            for(ColumnCSV col: columns)
+            {
+                if(col.getColumnDataType().equals("Integer"))
+                {
+                    parameterization[p] = Integer.parseInt(col.getColumnStringArray().get(i));
+                    datatypes[p] = Integer.class;
+                }
+                else if(col.getColumnDataType().equals("Double"))
+                {
+                    parameterization[p] = Double.parseDouble(col.getColumnStringArray().get(i));
+                    datatypes[p] = Double.class;
+                }
+                else if(col.getColumnDataType().equals("LocalDateTime"))
+                {
+                    parameterization[p] = LocalDateTime.parse(col.getColumnStringArray().get(i));
+                    datatypes[p] = LocalDateTime.class;
+                }
+                else if(col.getColumnDataType().equals("LocalDate"))
+                {
+                    try
+                    {
+                        parameterization[p] = LocalDate.parse(col.getColumnStringArray().get(i));
+                        datatypes[p] = LocalDate.class;
+                    }catch(DateTimeParseException exDt)
+                    {
+                        try
+                        {
+                            parameterization[p] = LocalDate.parse(col.getColumnStringArray().get(i), DateTimeFormatter.ofPattern("M/d/yyyy"));
+                            datatypes[p] = LocalDate.class;
+                        }catch(DateTimeParseException exDt2)
+                        {
+                            try
+                            {
+                                parameterization[p] = LocalDate.parse(col.getColumnStringArray().get(i), DateTimeFormatter.ofPattern("M/d/yy"));
+                                datatypes[p] = LocalDate.class;
+                            }catch(DateTimeParseException exDt3)
+                            {
+                                try
+                                {
+                                    parameterization[p] = LocalDate.parse(col.getColumnStringArray().get(i), DateTimeFormatter.ofPattern("M-d-yyyy"));
+                                    datatypes[p] = LocalDate.class;
+                                }catch(DateTimeParseException exDt4)
+                                {
+                                    try
+                                    {
+                                        parameterization[p] = LocalDate.parse(col.getColumnStringArray().get(i), DateTimeFormatter.ofPattern("M-d-yy"));
+                                        datatypes[p] = LocalDate.class;
+                                    }catch(DateTimeParseException exDt5)
+                                    {
+                                        try
+                                        {
+                                            parameterization[p] = LocalDate.parse(col.getColumnStringArray().get(i), DateTimeFormatter.ofPattern("yyyy/M/d"));
+                                            datatypes[p] = LocalDate.class;
+                                        }catch(DateTimeParseException exDt6)
+                                        {
+                                            //should never be reached due to column building steps
+
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                else if(col.getColumnDataType().equals("Boolean"))
+                {
+                    if(col.getColumnStringArray().get(i).equalsIgnoreCase("True"))
+                    {
+                        parameterization[p] = true;
+                        datatypes[p] = Boolean.class;
+                    }
+                    else if(col.getColumnStringArray().get(i).equalsIgnoreCase("Yes"))
+                    {
+                        parameterization[p] = true;
+                        datatypes[p] = Boolean.class;
+                    }
+                    else
+                    {
+                        try
+                        {
+                            if(Integer.parseInt(col.getColumnStringArray().get(i)) == 1)
+                            {
+                                parameterization[p] = true;
+                                datatypes[p] = Boolean.class;
+                            }
+                            else
+                            {
+                                parameterization[p] = false;
+                                datatypes[p] = Boolean.class;
+                            }
+                        }
+                        catch(NumberFormatException exInt)
+                        {
+                            parameterization[p] = false;
+                            datatypes[p] = Boolean.class;
+                        }
+                    }
+                }
+                else
+                {
+                    parameterization[p] = col.getColumnStringArray().get(i);
+                    datatypes[p] = String.class;
+                }
+                //increment index of parameterization and datatype
+                p++;
+            }
+
+            Constructor csvConst = null;
+
+            //retrieve appropriate constructor of csvClass
+            try {
+                csvConst = Class.forName(csvClassName).getConstructor(datatypes);
+            } catch (NoSuchMethodException | ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+
+            //add new "row" to arrayList
+            try {
+                result.add((csvClass) csvConst.newInstance(parameterization));
+            } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
+                e.printStackTrace();
+            }
+
+        }
+
+        return result;
+    }
         public <csvClass> ArrayList<csvClass> readCSV()
         {
             Class CSVClass = null;
