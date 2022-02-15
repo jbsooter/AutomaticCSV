@@ -64,7 +64,11 @@ public class QuickParseCSV implements ParseCSV{
             try {
                 CSVClass = Class.forName(csvClassName);
             } catch (ClassNotFoundException e) {
-                e.printStackTrace();
+                //TODO: Improve these error messages and add docs link
+                System.err.println(String.format("Class for CSV %s not found. Did you run profileCSV() to generate the mapped class before continuing? ", csvFilePath));
+                System.err.println(String.format("profileCSV() must be used to generate the Class file for CSV %s on an individual run of Java. It is not dynamically loaded. See Docs. ", csvFilePath));
+                //e.printStackTrace();
+                return null;
             }
 
             ArrayList<csvClass> results = new ArrayList<>();
