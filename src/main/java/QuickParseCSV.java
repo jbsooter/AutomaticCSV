@@ -242,7 +242,7 @@ public class QuickParseCSV implements ParseCSV{
             ArrayList<csvClass> results = new ArrayList<>();
 
             Field[] fields = CSVClass.getDeclaredFields();
-            
+
             Scanner fileScnr = null;
             try {
                 fileScnr = new Scanner(new File(csvFilePath));
@@ -405,7 +405,7 @@ public class QuickParseCSV implements ParseCSV{
                         }
 
                     }
-                    i += 1;
+                    //i += 1;
                 }
 
 
