@@ -17,7 +17,7 @@ import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class AutoReadCSV implements ParseCSV{
+public class AutoReadCSV implements ReadCSV {
 
     private String  csvFilePath;
 
@@ -42,7 +42,7 @@ public class AutoReadCSV implements ParseCSV{
         this.csvClassName = createClassName(csvFilePath);
     }
 
-    public <T> ArrayList<T> profileCSV()  {
+    public <T> ArrayList<T> readCSV()  {
 
         try
             {
@@ -50,7 +50,7 @@ public class AutoReadCSV implements ParseCSV{
                 Class CSVClass = Class.forName(csvClassName);
                 FileReader CSVClassReader = new FileReader(String.format("src/main/java/%s.java", csvClassName));
                 System.out.println("CLASS EXISTS");
-                return readCSV(CSVClass);
+                return readCSVfromClass(CSVClass);
             }catch(ClassNotFoundException | FileNotFoundException ex)
             {
                 System.out.println("Generating Java Class....");
@@ -93,9 +93,9 @@ public class AutoReadCSV implements ParseCSV{
             e.printStackTrace();
         }
 
-        return readCSVEmbedded(columns);
+        return readCSVfromColumns(columns);
         }
-    public <csvClass> ArrayList<csvClass> readCSVEmbedded(ArrayList<ColumnCSV> columns)
+    private <csvClass> ArrayList<csvClass> readCSVfromColumns(ArrayList<ColumnCSV> columns)
     {
         ArrayList<csvClass> result = new ArrayList<csvClass>();
 
@@ -236,7 +236,7 @@ public class AutoReadCSV implements ParseCSV{
 
         return result;
     }
-        public <csvClass> ArrayList<csvClass> readCSV(Class CSVClass)
+        private <csvClass> ArrayList<csvClass> readCSVfromClass(Class CSVClass)
         {
             ArrayList<csvClass> results = new ArrayList<>();
 
@@ -414,7 +414,7 @@ public class AutoReadCSV implements ParseCSV{
                     //i += 1;
 
                 }
-                
+
                 try{
                     results.add((csvClass) quickCSVConstructor.newInstance(parsedRow));
                 } catch (InvocationTargetException e) {
@@ -721,7 +721,7 @@ public class AutoReadCSV implements ParseCSV{
             }
             i++;
         }
-        //TODO: Annotate
+
         constructorParameterization = "@CSVConstructor\n" + constructorParameterization + ") {\n";
 
         //Write paramaterized Constructor Signature to File
@@ -760,7 +760,7 @@ public class AutoReadCSV implements ParseCSV{
     }
 
     //Logic to clean up confusing/illegal characters from cells (Needs to be improved)
-    public ArrayList<String> cleanCells(ArrayList<String> currentColumnValues)
+    private ArrayList<String> cleanCells(ArrayList<String> currentColumnValues)
     {
         ArrayList<String> cleanValues = new ArrayList<>();
 
@@ -827,7 +827,7 @@ public class AutoReadCSV implements ParseCSV{
         return columnName;
     }
 
-    public boolean checkIntTrue(String cell)
+    private boolean checkIntTrue(String cell)
     {
         Integer intCell;
         try
