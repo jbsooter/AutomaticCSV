@@ -48,9 +48,10 @@ public class QuickParseCSV implements ParseCSV{
             {
                 //if class already exists>>>
                 Class CSVClass = Class.forName(csvClassName);
+                FileReader CSVClassReader = new FileReader(String.format("src/main/java/%s.java", csvClassName));
                 System.out.println("CLASS EXISTS");
                 return readCSV(CSVClass);
-            }catch(ClassNotFoundException ex)
+            }catch(ClassNotFoundException | FileNotFoundException ex)
             {
                 System.out.println("Generating Java Class....");
             }
@@ -256,14 +257,7 @@ public class QuickParseCSV implements ParseCSV{
 
             Field[] fields = CSVClass.getDeclaredFields();
 
-            ArrayList<Class> csvFields = new ArrayList<>();
-            for(Field f: fields)
-            {
-                if(f.isAnnotationPresent(QuickCSVField.class))
-                {
-                    csvFields.add(f.getType()); //getType required to get the actual class of type
-                }
-            }
+
 
             Scanner fileScnr = null;
             try {
@@ -291,10 +285,74 @@ public class QuickParseCSV implements ParseCSV{
             Scanner headerScnr = new Scanner(headerRow);
             headerScnr.useDelimiter(",");
 
+            //START: code to put the datatypes from @QuickCSVField in the correct order relative to the CSV. (Protect against user modification or reordering)
+            //NOTE: The QuickCSVConstructor is not affected by reordering the fields, so if it is clean the instantiation of objects is not affected once datatypes are ordered.
+            //put all headers from csv into arraylist
+            ArrayList<String> headers = new ArrayList<>();
+            while(headerScnr.hasNext())
+            {
+                headers.add(headerScnr.next());
+            }
+
+            //create list of java qualified field names from csv header
+            ArrayList<String> jcHeaders = new ArrayList<>();
+            for(String h: headers)
+            {
+                String hjc = javaQualifiedName(h);
+                Boolean headercheck = false;
+
+                while(headercheck == false)
+                if(jcHeaders.contains(hjc))
+                {
+                    hjc += "I";
+                }
+                else
+                {
+                    jcHeaders.add(hjc);
+                    headercheck = true;
+                }
+            }
+
+            //get numver of QuickCSV annotated fields
+            int numCSVFields = 0;
+            for(Field f: fields)
+            {
+                if(f.isAnnotationPresent(QuickCSVField.class))
+                {
+                    numCSVFields += 1;
+                }
+            }
+
+            //order classes of data to match csv
+            Class[] csvFields = new Class[numCSVFields];
+            for(Field f: fields)
+            {
+                int col_index = 0;
+                if(f.isAnnotationPresent(QuickCSVField.class))
+                {
+                    for(String h: jcHeaders)
+                    {
+                        System.out.println(h);
+                        if(h.equals(f.getName()))
+                        {
+                            csvFields[col_index] = f.getType();
+
+                        }
+                        else
+                        {
+                            col_index += 1;
+                        }
+
+                    }
+
+                }
+            }
+
+
             for(String[] row: rawRowArrays)
             {
                 //store parsed cell values to create csvClass object
-                Object[] parsedRow = new Object[csvFields.size()];
+                Object[] parsedRow = new Object[csvFields.length];
 
                 int col = 0;
                 for(Class c: csvFields)
