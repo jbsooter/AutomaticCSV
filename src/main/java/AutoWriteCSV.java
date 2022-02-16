@@ -4,21 +4,21 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 
-public class QuickWriteCSV implements WriteCSV{
+public class AutoWriteCSV implements WriteCSV{
     private String csvFilePath;
 
     private File csvFileObject;
 
 
-    public QuickWriteCSV() {
+    public AutoWriteCSV() {
     }
 
-    public QuickWriteCSV(String csvFilePath) {
+    public AutoWriteCSV(String csvFilePath) {
         this.csvFilePath = csvFilePath;
         this.csvFileObject = new File(csvFilePath);
     }
 
-    public QuickWriteCSV(File csvFileObject) {
+    public AutoWriteCSV(File csvFileObject) {
         this.csvFileObject = csvFileObject;
         this.csvFilePath = csvFileObject.toString();
     }

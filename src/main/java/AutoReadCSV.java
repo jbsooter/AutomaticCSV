@@ -17,7 +17,7 @@ import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class QuickParseCSV implements ParseCSV{
+public class AutoReadCSV implements ParseCSV{
 
     private String  csvFilePath;
 
@@ -25,18 +25,18 @@ public class QuickParseCSV implements ParseCSV{
 
     private String csvClassName;
 
-    public QuickParseCSV()
+    public AutoReadCSV()
     {
 
     }
 
-    public QuickParseCSV(String csvFilePath) {
+    public AutoReadCSV(String csvFilePath) {
         this.csvFilePath = csvFilePath;
         this.csvFileObject = new File(csvFilePath);
         this.csvClassName = createClassName(csvFilePath);
     }
 
-    public QuickParseCSV(File csvFileObject) {
+    public AutoReadCSV(File csvFileObject) {
         this.csvFileObject = csvFileObject;
         this.csvFilePath = csvFileObject.toString();
         this.csvClassName = createClassName(csvFilePath);
@@ -98,7 +98,6 @@ public class QuickParseCSV implements ParseCSV{
     public <csvClass> ArrayList<csvClass> readCSVEmbedded(ArrayList<ColumnCSV> columns)
     {
         ArrayList<csvClass> result = new ArrayList<csvClass>();
-        //ArrayList<ColumnCSV> columns = buildColumns();
 
         //iterate through all ColumnCSV objects for the number of data cells that they hold.
         for(int i = 0; i < columns.get(0).getColumnStringArray().size(); i++){
@@ -293,7 +292,7 @@ public class QuickParseCSV implements ParseCSV{
             int numCSVFields = 0;
             for(Field f: fields)
             {
-                if(f.isAnnotationPresent(QuickCSVField.class))
+                if(f.isAnnotationPresent(CSVField.class))
                 {
                     numCSVFields += 1;
                 }
@@ -304,7 +303,7 @@ public class QuickParseCSV implements ParseCSV{
             for(Field f: fields)
             {
                 int col_index = 0;
-                if(f.isAnnotationPresent(QuickCSVField.class))
+                if(f.isAnnotationPresent(CSVField.class))
                 {
                     for(String h: jcHeaders)
                     {
@@ -330,10 +329,12 @@ public class QuickParseCSV implements ParseCSV{
 
             //identify the constructor for the CSV data by annotation
             for(Constructor c: con) {
-                if (c.isAnnotationPresent(QuickCSVConstructor.class)) {
+                if (c.isAnnotationPresent(CSVConstructor.class)) {
                     quickCSVConstructor = c;
                 }
             }
+
+            double start = System.currentTimeMillis();
             //for(String[] row: rawRowArrays)
             while(fileScnr.hasNextLine())
             {
@@ -341,11 +342,16 @@ public class QuickParseCSV implements ParseCSV{
                 //store parsed cell values to create csvClass object
                 Object[] parsedRow = new Object[csvFields.length];
 
+
+                double Start = System.currentTimeMillis();
                 for(int i = 0; i < csvFields.length; i++)
 
                 {
+                    //double st = System.currentTimeMillis();
 
                     String cleanCell = cleanCell(row[i]);
+
+                    //System.out.println(System.currentTimeMillis() - st);
                     if(csvFields[i].equals(Double.class))
                     {
                         parsedRow[i] = Double.parseDouble(cleanCell);
@@ -406,9 +412,9 @@ public class QuickParseCSV implements ParseCSV{
 
                     }
                     //i += 1;
+
                 }
-
-
+                
                 try{
                     results.add((csvClass) quickCSVConstructor.newInstance(parsedRow));
                 } catch (InvocationTargetException e) {
@@ -419,6 +425,7 @@ public class QuickParseCSV implements ParseCSV{
                     e.printStackTrace();
                 }
             }
+
             //return arrayList of csvClass objects
             return results;
         }
@@ -459,7 +466,7 @@ public class QuickParseCSV implements ParseCSV{
 
         //Instantiate all ColumnCSV objects and store in Columns
         while (headerScnr.hasNext()) {
-            String colName = headerScnr.next();
+            String colName = javaQualifiedName(headerScnr.next());
 
             ArrayList<String> currentColumnValues = new ArrayList<>();
 
@@ -469,7 +476,17 @@ public class QuickParseCSV implements ParseCSV{
             }
             currentColumnValues = cleanCells(currentColumnValues);
 
-            columns.add(new ColumnCSV(javaQualifiedName(colName), colIndex, currentColumnValues));
+
+
+            for(ColumnCSV col: columns)
+            {
+                if(col.getColumnName().equals(colName))
+                {
+                    colName = colName + "I";
+
+                }
+            }
+            columns.add(new ColumnCSV(colName, colIndex, currentColumnValues));
 
             colIndex++;
         }
@@ -680,7 +697,7 @@ public class QuickParseCSV implements ParseCSV{
         //Write Fields to File
         for (ColumnCSV col : columns) {
             try {
-                buildCSVClass.write("@QuickCSVField\n");
+                buildCSVClass.write("@CSVField\n");
                 buildCSVClass.write("private " + col.getColumnDataType()
                         + String.format(" %s;\n\n", col.getColumnName()));
             } catch (IOException e) {
@@ -705,7 +722,7 @@ public class QuickParseCSV implements ParseCSV{
             i++;
         }
         //TODO: Annotate
-        constructorParameterization = "@QuickCSVConstructor\n" + constructorParameterization + ") {\n";
+        constructorParameterization = "@CSVConstructor\n" + constructorParameterization + ") {\n";
 
         //Write paramaterized Constructor Signature to File
         buildCSVClass.write(constructorParameterization);
