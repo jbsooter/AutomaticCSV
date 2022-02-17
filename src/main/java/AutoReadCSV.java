@@ -17,6 +17,26 @@ import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Allows user to read a CSV file (headers assumed) and parse into an <code>ArrayList<></?></code> of Java objects, with no existing class Infrastructure.
+ *
+ * If the CSV file is being read in for the first time, and there is no existing POJO class, the file is read in as String,
+ * and datatypes are determined programmatically for each column.
+ *
+ * The generated class is then compiled and loaded dynamically, and the Strings from the CSV are parsed to the appropriate Type and are used to instantiate
+ * objects of the Type of the dynamically generated class.
+ *
+ * If the CSV file has been read in previously, and a POJO class structure for the CSV exists, the CSV is read in and parsed line by line and instantiated
+ * as objects of that Class.
+ *
+ * The <code>@CSVField</code> and <code>@CSVConstructor</code> annotations intentionally facilitate robust protections against user modifications to the class
+ * representing the CSV. So long as the <code>@CSVConstructor</code> annotated constructor is not modified, and all <code>@CSVField</code> annotated fields exist
+ * somewhere in the Class, in any order, the CSV can still be parsed into objects.
+ *
+ * User modification of the CSV-representative class is encouraged and is behind the philosophy of creating an automated method of reading in CSVs as POJOs rather
+ * than some sort of Tablesaw-esque dataframe. The goal of this library is to achieve the one-line convenience of .readCSV() methods in data science libraries and
+ * scripting languages while maintaining the benefits of custom Java objects and the strictly-typed philosophy.
+ */
 public class AutoReadCSV implements ReadCSV {
 
     private String  csvFilePath;
@@ -42,6 +62,12 @@ public class AutoReadCSV implements ReadCSV {
         this.csvClassName = createClassName(csvFilePath);
     }
 
+    /**
+     * Read in data from the CSV at the filepath specified when the <code>AutoReadCSV<code/> object was instantiated.
+     * @param <T> Type of Objects in ArrayList storing data from the csv. On first run, this should be Object. Once the class representing
+     * the CSV has been generated, this can be changed to that type to enable full functionality when interacting with the ArrayList.
+     * @return <code>ArrayList<T></code> of Objects storing the CSV data.
+     */
     public <T> ArrayList<T> readCSV()  {
 
         try
