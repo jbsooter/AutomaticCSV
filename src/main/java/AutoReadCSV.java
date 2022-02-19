@@ -67,8 +67,8 @@ public class AutoReadCSV implements ReadCSV {
         this.delimeter = ",";
         this.buildDirPath = "build/classes/java/main/";
         this.buildDirFileObject = new File("build/classes/java/main/");
-        this.srcDirPath = "src/java/main/";
-        this.srcDirFileObject = new File("src/java/main/");
+        this.srcDirPath = "src/main/java/";
+        this.srcDirFileObject = new File("src/main/java/");
     }
 
     public AutoReadCSV(File csvFileObject) {
@@ -78,8 +78,8 @@ public class AutoReadCSV implements ReadCSV {
         this.delimeter = ",";
         this.buildDirPath = "build/classes/java/main/";
         this.buildDirFileObject = new File("build/classes/java/main/");
-        this.srcDirPath = "src/java/main/";
-        this.srcDirFileObject = new File("src/java/main/");
+        this.srcDirPath = "src/main/java/";
+        this.srcDirFileObject = new File("src/main/java");
     }
 
     /**
@@ -704,7 +704,7 @@ public class AutoReadCSV implements ReadCSV {
             buildCSVClass = new FileWriter(csvPojo);
         } catch (IOException e) {
             //e.printStackTrace();
-            System.out.println(String.format("Attempt to Build CSV Class %s failed. Check the path specified for your src directory. Default is src/main/java"));
+            System.out.println(String.format("Attempt to Build CSV Class %s failed. Check the path specified for your src directory. Default is src/main/java", csvClassName));
         }
 
         Boolean localDateTimeImport = false;

@@ -54,7 +54,9 @@ public class JavaKeywords {
             "float",
             "native",
             "super",
-            "while"
+            "while",
+            "true",
+            "false"
     ));
 
     public JavaKeywords() {
