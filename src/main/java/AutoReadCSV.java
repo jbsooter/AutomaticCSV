@@ -45,6 +45,16 @@ public class AutoReadCSV implements ReadCSV {
 
     private String csvClassName;
 
+    private String delimeter;
+
+    private String srcDirPath;
+
+    private File srcDirFileObject;
+
+    private String buildDirPath;
+
+    private File buildDirFileObject;
+
     public AutoReadCSV()
     {
 
@@ -54,12 +64,22 @@ public class AutoReadCSV implements ReadCSV {
         this.csvFilePath = csvFilePath;
         this.csvFileObject = new File(csvFilePath);
         this.csvClassName = createClassName(csvFilePath);
+        this.delimeter = ",";
+        this.buildDirPath = "build/classes/java/main/";
+        this.buildDirFileObject = new File("build/classes/java/main/");
+        this.srcDirPath = "src/java/main/";
+        this.srcDirFileObject = new File("src/java/main/");
     }
 
     public AutoReadCSV(File csvFileObject) {
         this.csvFileObject = csvFileObject;
         this.csvFilePath = csvFileObject.toString();
         this.csvClassName = createClassName(csvFilePath);
+        this.delimeter = ",";
+        this.buildDirPath = "build/classes/java/main/";
+        this.buildDirFileObject = new File("build/classes/java/main/");
+        this.srcDirPath = "src/java/main/";
+        this.srcDirFileObject = new File("src/java/main/");
     }
 
     /**
@@ -74,23 +94,24 @@ public class AutoReadCSV implements ReadCSV {
             {
                 //if class already exists>>>
                 Class CSVClass = Class.forName(csvClassName);
+                //make sure class "existing" is not just lingering .class file
                 FileReader CSVClassReader = new FileReader(String.format("src/main/java/%s.java", csvClassName));
-                System.out.println("CLASS EXISTS");
+                System.out.println(String.format("CLASS %s EXISTS", csvClassName));
                 return readCSVfromClass(CSVClass);
             }catch(ClassNotFoundException | FileNotFoundException ex)
             {
-                System.out.println("Generating Java Class....");
+                System.out.println(String.format("No CSV Class  \"%s\" detected. ", csvClassName));
+                System.out.println(String.format("Generating CSV Class %s....", csvClassName));
             }
-
-
 
             ArrayList<ColumnCSV> columns = buildColumns();
 
             try {
                 buildPOJO(columns);
             } catch (IOException e) {
-                e.printStackTrace();
-                System.out.println("Attempt to Build Class Failed. ");
+                //e.printStackTrace();
+                System.out.println(String.format("Attempt to Build Class  \"%s\" Failed. ", csvClassName));
+                return null;
             }
 
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
@@ -99,9 +120,10 @@ public class AutoReadCSV implements ReadCSV {
                 null, null, null);
         try {
             fileManager.setLocation(StandardLocation.CLASS_OUTPUT, Arrays
-                    .asList(new File("build/classes/java/main/")));
+                    .asList(new File(buildDirPath)));
         } catch (IOException e) {
             e.printStackTrace();
+            System.out.println(String.format("Build Directory %s not found. Set your build directory with setBuildDirPath()", buildDirPath));
         }
 
         boolean success = compiler.getTask(null, fileManager, null, null, null,
@@ -284,7 +306,7 @@ public class AutoReadCSV implements ReadCSV {
 
             //Scanner for HEADERROW String (Not file)
             Scanner headerScnr = new Scanner(headerRow);
-            headerScnr.useDelimiter(",");
+            headerScnr.useDelimiter(delimeter);
 
             //START: code to put the datatypes from @QuickCSVField in the correct order relative to the CSV. (Protect against user modification or reordering)
             //NOTE: The QuickCSVConstructor is not affected by reordering the fields, so if it is clean the instantiation of objects is not affected once datatypes are ordered.
@@ -349,7 +371,7 @@ public class AutoReadCSV implements ReadCSV {
                 }
             }
 
-//get all constructors of class CSVClass
+            //get all constructors of class CSVClass
             Constructor[] con = CSVClass.getConstructors();
             Constructor quickCSVConstructor = null;
 
@@ -364,7 +386,7 @@ public class AutoReadCSV implements ReadCSV {
             //for(String[] row: rawRowArrays)
             while(fileScnr.hasNextLine())
             {
-                String[] row = fileScnr.nextLine().split(",");
+                String[] row = fileScnr.nextLine().split(delimeter);
                 //store parsed cell values to create csvClass object
                 Object[] parsedRow = new Object[csvFields.length];
 
@@ -477,12 +499,12 @@ public class AutoReadCSV implements ReadCSV {
 
         //get String[] representation of ALL rows in file
         while (fileScnr.hasNextLine()) {
-            rawRowArrays.add(fileScnr.nextLine().split(","));
+            rawRowArrays.add(fileScnr.nextLine().split(delimeter));
         }
 
         //Scanner for HEADERROW String (Not file)
         Scanner headerScnr = new Scanner(headerRow);
-        headerScnr.useDelimiter(",");
+        headerScnr.useDelimiter(delimeter);
 
         //Store ColumnCSV objects
         ArrayList<ColumnCSV> columns = new ArrayList<>();
@@ -523,7 +545,7 @@ public class AutoReadCSV implements ReadCSV {
         return columns;
     }
 
-    //Logic to determine datatype. Everything is a Double, Integer, or String
+    //Logic to determine datatype. Options: String, Double, Integer, Boolean, LocalDate, LocalDateTime
     private Object intuitDatatype(ArrayList<String> columnData)
     {
         Class cellBestClass = String.class;
@@ -626,7 +648,7 @@ public class AutoReadCSV implements ReadCSV {
             potentialColumnClass.add(cellBestClass);
 
         }
-        //System.out.println(potentialColumnClass);
+
         if(potentialColumnClass.contains(String.class))
         {
             return String.class;
@@ -674,14 +696,15 @@ public class AutoReadCSV implements ReadCSV {
         }
 
         //Create file for POJO Structure
-        File csvPojo = new File(String.format("src/main/java/%s%s", csvClassName, ".java"));
+        File csvPojo = new File(String.format("%s%s.java", srcDirPath, csvClassName));
 
         //Create FileWriter
         Writer buildCSVClass = null;
         try {
             buildCSVClass = new FileWriter(csvPojo);
         } catch (IOException e) {
-            e.printStackTrace();
+            //e.printStackTrace();
+            System.out.println(String.format("Attempt to Build CSV Class %s failed. Check the path specified for your src directory. Default is src/main/java"));
         }
 
         Boolean localDateTimeImport = false;
@@ -806,6 +829,7 @@ public class AutoReadCSV implements ReadCSV {
         return cleanValues;
     }
 
+    //Same logic as cleanCells, but for an individual value. Needs to be improved
     private String cleanCell(String cell)
     {
         String correctedCell = cell.replaceAll("\"", "").trim();
@@ -823,7 +847,6 @@ public class AutoReadCSV implements ReadCSV {
         String csvNameNoExtension = csvFilePath.substring(csvFilePath.lastIndexOf("/") + 1);
         csvNameNoExtension = csvNameNoExtension.substring(0, csvNameNoExtension.lastIndexOf("."));
         String csvClassName = csvNameNoExtension.substring(0,1).toUpperCase() + csvNameNoExtension.substring(1).toLowerCase();
-
 
         //remove unqualifiedchar
         csvClassName = javaQualifiedName(csvClassName);
@@ -879,6 +902,50 @@ public class AutoReadCSV implements ReadCSV {
 
     public File getCsvFileObject() {
         return csvFileObject;
+    }
+
+    public String getDelimeter() {
+        return delimeter;
+    }
+
+    public void setDelimeter(String delimeter) {
+        this.delimeter = delimeter;
+    }
+
+    public String getSrcDirPath() {
+        return srcDirPath;
+    }
+
+    public void setSrcDirPath(String srcDirPath) {
+        this.srcDirPath = srcDirPath;
+        this.srcDirFileObject = new File(srcDirPath);
+    }
+
+    public File getSrcDirFileObject() {
+        return srcDirFileObject;
+    }
+
+    public void setSrcDirFileObject(File srcDirFileObject) {
+        this.srcDirFileObject = srcDirFileObject;
+        this.srcDirPath = srcDirFileObject.getPath();
+    }
+
+    public String getBuildDirPath() {
+        return buildDirPath;
+    }
+
+    public void setBuildDirPath(String buildDirPath) {
+        this.buildDirPath = buildDirPath;
+        this.buildDirFileObject = new File(buildDirPath);
+    }
+
+    public File getBuildDirFileObject() {
+        return buildDirFileObject;
+    }
+
+    public void setBuildDirFileObject(File buildDirFileObject) {
+        this.buildDirFileObject = buildDirFileObject;
+        this.buildDirPath = buildDirFileObject.getPath();
     }
 }
 
