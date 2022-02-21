@@ -133,13 +133,15 @@ public class AutoReadCSV implements ReadCSV {
             e.printStackTrace();
         }
 
+        Class c = null;
         try{
-            Class.forName(csvClassName);
+            c = Class.forName(csvClassName);
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
 
-        return readCSVfromColumns(columns);
+        //return readCSVfromColumns(columns);
+        return readCSVfromClass(c);
         }
     private <csvClass> ArrayList<csvClass> readCSVfromColumns(ArrayList<ColumnCSV> columns)
     {
@@ -384,8 +386,6 @@ public class AutoReadCSV implements ReadCSV {
             //for(String[] row: rawRowArrays)
             Map<Integer, String> LocalDateTypeIndicator = new HashMap<>();
             Map<Integer, String> BooleanTypeIndicator = new HashMap<>();
-
-
             while(fileScnr.hasNextLine())
             {
                 String[] row = fileScnr.nextLine().split(delimeter);
@@ -592,9 +592,100 @@ public class AutoReadCSV implements ReadCSV {
         Class cellBestClass = String.class;
         ArrayList<Class> potentialColumnClass = new ArrayList<>();
 
+        Class lastSeenCellBestClass = Object.class; //prevent null issue
+        String dtStringFormat = "";
+        int row = 0;
         for(String cell: columnData)
         {
-            cellBestClass = String.class;
+            //cellBestClass = String.class;
+            if(lastSeenCellBestClass.equals(String.class))
+            {
+                break; //if there is ever a string type cell, have to read it in as string
+            }
+            else if(lastSeenCellBestClass.equals(Boolean.class))
+            {
+
+                    if(cell.equalsIgnoreCase("Yes") || cell.equalsIgnoreCase("No"))
+                    {
+                        continue;
+                    }
+                    else if(cell.equalsIgnoreCase("True")  || cell.equalsIgnoreCase("False"))
+                    {
+                        continue;
+                    }
+                    else
+                    {
+                        try
+                        {
+                            int val = Integer.parseInt(cell);
+                            if(val == 1 || val == 0)
+                            {
+                                continue;
+                            }
+                        }catch(NumberFormatException ex)
+                        {
+
+                        }
+                    }
+
+            }
+            else if(lastSeenCellBestClass.equals(Integer.class))
+            {
+                try
+                {
+                    Integer.parseInt(cell);
+                    cellBestClass = Integer.class;
+                    continue; //next iteration
+                }catch(NumberFormatException ex)
+                {
+
+                }
+            }
+            else if(lastSeenCellBestClass.equals(Double.class))
+            {
+                boolean yesDouble = false;
+                try
+                {
+                    Double.parseDouble(cell);
+                    yesDouble = true;
+                }catch(NumberFormatException ex)
+                {
+
+                }
+
+                try
+                {
+                    Integer.parseInt(cell);
+                }catch(NumberFormatException ex)
+                {
+                    if(yesDouble)
+                    {
+                        continue;
+                    }
+                }
+            }
+            else if(lastSeenCellBestClass.equals(LocalDate.class))
+            {
+                try
+                {
+                    LocalDate.parse(cell, DateTimeFormatter.ofPattern(dtStringFormat));
+                    continue;
+                }catch(DateTimeParseException ex)
+                {
+
+                }
+            }
+            else if(lastSeenCellBestClass.equals(LocalDateTime.class))
+            {
+                try
+                {
+                    LocalDateTime.parse(cell);
+                    continue;
+                }catch(DateTimeParseException ex)
+                {
+
+                }
+            }
 
             try
             {
@@ -622,36 +713,42 @@ public class AutoReadCSV implements ReadCSV {
                         {
                             LocalDate.parse(cell);
                             cellBestClass = LocalDate.class;
+                            dtStringFormat = "yyyy-M-d";
                         }catch(DateTimeParseException exD)
                         {
                             try
                             {
                                 LocalDate.parse(cell, DateTimeFormatter.ofPattern("M/d/yyyy"));
                                 cellBestClass = LocalDate.class;
+                                dtStringFormat = "M/d/yyyy";
                             }catch(DateTimeParseException exD2)
                             {
                                 try
                                 {
                                     LocalDate.parse(cell, DateTimeFormatter.ofPattern("M/d/yy"));
                                     cellBestClass = LocalDate.class;
+                                    dtStringFormat = "M/d/yy";
                                 }catch(DateTimeParseException exD3)
                                 {
                                     try
                                     {
                                         LocalDate.parse(cell, DateTimeFormatter.ofPattern("M-d-yyyy"));
                                         cellBestClass = LocalDate.class;
+                                        dtStringFormat = "M-d-yyyy";
                                     }catch(DateTimeParseException exD4)
                                     {
                                         try
                                         {
                                             LocalDate.parse(cell, DateTimeFormatter.ofPattern("M-dd-yy"));
                                             cellBestClass = LocalDate.class;
+                                            dtStringFormat = "M-dd-yy";
                                         }catch(DateTimeException exD5)
                                         {
                                             try
                                             {
                                                 LocalDate.parse(cell, DateTimeFormatter.ofPattern("yyyy/M/d"));
                                                 cellBestClass = LocalDate.class;
+                                                dtStringFormat = "yyyy/M/d";
                                             }catch(DateTimeException exD6)
                                             {
                                                 cellBestClass = String.class;
@@ -686,6 +783,7 @@ public class AutoReadCSV implements ReadCSV {
                 }
             }
 
+            lastSeenCellBestClass = cellBestClass;
             potentialColumnClass.add(cellBestClass);
 
         }
