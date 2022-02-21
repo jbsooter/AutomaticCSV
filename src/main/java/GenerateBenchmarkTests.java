@@ -9,7 +9,7 @@ public class GenerateBenchmarkTests {
         {
             for(int j = 0; j < 4; j++)
             {
-                f.write("yes,no,true,false,1,0");
+                f.write("yes,no,true,false,1,0,");
             }
             f.write("yes\n");
 
@@ -21,7 +21,7 @@ public class GenerateBenchmarkTests {
         {
             for(int j = 0; j < 4; j++)
             {
-                f.write("yes,no,true,false,1,0");
+                f.write("yes,no,true,false,1,0,");
             }
             f.write("yes\n");
 
@@ -33,7 +33,7 @@ public class GenerateBenchmarkTests {
         {
             for(int j = 0; j < 4; j++)
             {
-                f.write("yes,no,true,false,1,0");
+                f.write("yes,no,true,false,1,0,");
             }
             f.write("yes\n");
 
