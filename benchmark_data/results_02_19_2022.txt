@@ -1,0 +1,25 @@
+Before Changes to Intuition Algorithm
+allBooleanOneHundredThousandInitial:4.115
+allBooleanOneHundredThousandWithClass:1.333
+allBooleanOneMillionInitial:0.446
+allBooleanOneMillionWithClass:0.129
+allBooleanTenThousandInitial:1.301
+allBooleanTenThousandWithClass:0.215
+allDoubleOneHundredThousandInitial:4.53
+allDoubleOneHundredThousandWithClass:1.865
+allDoubleOneMillionInitial:50.868
+allDoubleOneMillionWithClass:18.685
+allDoubleTenThousandInitial:0.635
+allDoubleTenThousandWithClass:0.202
+allLocalDateOneHundredThousandInitial:6.811
+allLocalDateOneHundredThousandWithClass:0.702
+allLocalDateOneMillionInitial:69.022
+allLocalDateOneMillionWithClass:6.817
+allLocalDateTenThousandInitial:1.102
+allLocalDateTenThousandWithClass:0.106
+allStringOneHundredThousandInitial:8.026
+allStringOneHundredThousandWithClass:0.708
+allStringOneMillionInitial:107.508
+allStringOneMillionWithClass:7.98
+allStringTenThousandInitial:0.799
+allStringTenThousandWithClass:0.079
