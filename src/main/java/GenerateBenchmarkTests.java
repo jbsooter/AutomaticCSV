@@ -1,7 +1,7 @@
 import java.io.FileWriter;
 import java.io.IOException;
 
-public class GenerateBenchmarkTests {
+class GenerateBenchmarkTests {
 
     public static void generateBooleanTests() throws IOException {
         FileWriter f = new FileWriter("benchmark_data/allBooleanTenThousand.csv");

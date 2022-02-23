@@ -3,7 +3,7 @@ import java.util.Arrays;
 
 //List comes from this Oracle Documentation
 //https://docs.oracle.com/javase/tutorial/java/nutsandbolts/_keywords.html
-public class JavaKeywords {
+class JavaKeywords {
     private final ArrayList<String> JAVA_KEYWORDS = new ArrayList<>(Arrays.asList(
             "abstract",
             "continue",

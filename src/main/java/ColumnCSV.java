@@ -12,7 +12,7 @@ class ColumnCSV {
 
     private Object columnDataType;
 
-    public ColumnCSV(String columnName, Integer columnIndex, List<String> columnStringArray) {
+    ColumnCSV(String columnName, Integer columnIndex, List<String> columnStringArray) {
         //this.columnName = columnName.replaceAll("[^a-zA-Z]+", " ").trim().replaceAll("\\s", "");
         this.columnName = columnName;
         this.columnIndex = columnIndex;
