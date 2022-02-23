@@ -2,7 +2,7 @@ plugins {
     id 'java-library'
 }
 
-group 'org.sooter'
+group 'io.github.jbsooter'
 version '1.0-SNAPSHOT'
 
 repositories {
