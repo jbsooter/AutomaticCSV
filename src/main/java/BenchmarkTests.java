@@ -4,7 +4,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
-public class BenchmarkTests {
+class BenchmarkTests {
     public static void runBenchmarkTests()
     {
         Map<String, Long> results = new HashMap<>();
