@@ -1,18 +1,18 @@
 # AutomaticCSV
 #### :rocket: Lightweight Java Library to Automatically Create Plain Old Java Object (POJO) from any CSV File
-#### WIP
-Take advantage of the flexibility and power of the Java Object structure with the "one liner" convenience of importing a CSV with Tablesaw or a scripting language. 
+
+Take advantage of the flexibility and power of the traditional Java object structure with the "one line" convenience of reading a CSV with Tablesaw or a scripting language. 
 
 
 ## Getting Started
 
-1. Add the AutomaticCSV Dependancy to your Gradle or Maven Project. (TODO: Link to mvnrepository)
+1. Add the AutomaticCSV dependancy to your Gradle or Maven Project. (TODO: Link to mvnrepository)
 
   ```Java
   //TODO: Maven code snippet
   ```
 
-2. Create a Java class file in your src/main/java/ directory. (TODO: Add ability to change directory loc)
+2. Create a Java class file in your Gradle project.
         
  ```Java
  import java.util.ArrayList;
