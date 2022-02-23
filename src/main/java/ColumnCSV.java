@@ -1,7 +1,4 @@
-import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 class ColumnCSV {
     private String columnName;
@@ -13,7 +10,6 @@ class ColumnCSV {
     private Object columnDataType;
 
     ColumnCSV(String columnName, Integer columnIndex, List<String> columnStringArray) {
-        //this.columnName = columnName.replaceAll("[^a-zA-Z]+", " ").trim().replaceAll("\\s", "");
         this.columnName = columnName;
         this.columnIndex = columnIndex;
         this.columnStringArray = columnStringArray;
