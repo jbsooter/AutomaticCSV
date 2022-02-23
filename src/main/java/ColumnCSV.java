@@ -1,6 +1,4 @@
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 class ColumnCSV {
     private String columnName;
@@ -11,25 +9,10 @@ class ColumnCSV {
 
     private Object columnDataType;
 
-    public ColumnCSV(String columnName, Integer columnIndex, List<String> columnStringArray, Object columnDataType) {
-        //this.columnName = columnName.replaceAll("[^a-zA-Z]+", " ").trim().replaceAll("\\s", "");
-        this.columnName = cleanColumnName(columnName);
+    ColumnCSV(String columnName, Integer columnIndex, List<String> columnStringArray) {
+        this.columnName = columnName;
         this.columnIndex = columnIndex;
         this.columnStringArray = columnStringArray;
-        this.columnDataType = columnDataType.toString().substring(columnDataType.toString().lastIndexOf("." ) + 1);
-    }
-
-    private String cleanColumnName(String columnName) {
-        Pattern p = Pattern.compile("\\d+");
-        Matcher m = p.matcher(columnName);
-        while(m.find())
-        {
-            columnName = columnName.replace(m.group(), EnglishNumberToWords.convert(Long.parseLong( m.group())));
-        }
-        columnName = columnName.trim().replaceAll("\\s", "").replaceAll("%", "pct")
-                .replaceAll("\\(", "").replaceAll("\\)", "").replaceAll("\\.", "");
-        columnName = columnName.replaceAll("[^a-zA-Z]", "");
-        return columnName;
     }
 
 
@@ -54,7 +37,7 @@ class ColumnCSV {
     }
 
     public void setColumnDataType(Object columnDataType) {
-        this.columnDataType = columnDataType;
+        this.columnDataType = columnDataType.toString().substring(columnDataType.toString().lastIndexOf("." ) + 1);
     }
 
     public List<String> getColumnStringArray() {

@@ -1,0 +1,25 @@
+With improvements to intuitDatatypes for all types
+allBooleanOneHundredThousandInitial:3.082
+allBooleanOneHundredThousandWithClass:1.496
+allBooleanOneMillionInitial:0.312
+allBooleanOneMillionWithClass:0.147
+allBooleanTenThousandInitial:1.149
+allBooleanTenThousandWithClass:0.155
+allDoubleOneHundredThousandInitial:3.965
+allDoubleOneHundredThousandWithClass:1.835
+allDoubleOneMillionInitial:43.199
+allDoubleOneMillionWithClass:18.783
+allDoubleTenThousandInitial:0.714
+allDoubleTenThousandWithClass:0.371
+allLocalDateOneHundredThousandInitial:2.791
+allLocalDateOneHundredThousandWithClass:0.702
+allLocalDateOneMillionInitial:26.3
+allLocalDateOneMillionWithClass:7.039
+allLocalDateTenThousandInitial:0.528
+allLocalDateTenThousandWithClass:0.087
+allStringOneHundredThousandInitial:2.161
+allStringOneHundredThousandWithClass:0.885
+allStringOneMillionInitial:22.509
+allStringOneMillionWithClass:8.909
+allStringTenThousandInitial:0.251
+allStringTenThousandWithClass:0.066
