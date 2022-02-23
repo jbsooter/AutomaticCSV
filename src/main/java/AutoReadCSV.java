@@ -16,18 +16,17 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Allows user to read a CSV file (headers assumed) and parse into an <code>ArrayList<></?></code> of Java objects, with no existing class Infrastructure.
+ * Allows user to read a CSV file (headers assumed) and parse into an <code>ArrayList<></?></code> of Java objects, with no existing class infrastructure.
  *
  * If the CSV file is being read in for the first time, and there is no existing POJO class, the file is read in as String,
  * and datatypes are determined programmatically for each column.
  *
- * The generated class is then compiled and loaded dynamically, and the Strings from the CSV are parsed to the appropriate Type and are used to instantiate
- * objects of the Type of the dynamically generated class.
+ * The generated class is then compiled and loaded dynamically, and the CSV is parsed line by line and objects of the appropriate class type are instantiated.
  *
- * If the CSV file has been read in previously, and a POJO class structure for the CSV exists, the CSV is read in and parsed line by line and instantiated
- * as objects of that Class.
+ * If the CSV file has been read in previously, AutomaticCSV skips to the line by line parsing step. This saves a substantial amount of time and preserves user added
+ * class methods and constructors.
  *
- * The <code>@CSVField</code> and <code>@CSVConstructor</code> annotations intentionally facilitate robust protections against user modifications to the class
+ * The <code>@CSVField</code> and <code>@CSVConstructor</code> annotations intentionally facilitate robust protections against destructive user modifications to the class
  * representing the CSV. So long as the <code>@CSVConstructor</code> annotated constructor is not modified, and all <code>@CSVField</code> annotated fields exist
  * somewhere in the Class, in any order, the CSV can still be parsed into objects.
  *
@@ -37,27 +36,69 @@ import java.util.regex.Pattern;
  */
 public class AutoReadCSV implements ReadCSV {
 
+    /**
+     * Path of the CSV file.
+     */
     private String  csvFilePath;
 
+    /**
+     * Path of the CSV file.
+     */
     private File csvFileObject;
 
+    /**
+     * Name of the Class representing the CSV file. Based off of the name of the CSV file,
+     * but may be slightly different as AutomaticCSV programmatically ensures that the CSV class
+     * is named with a Java qualified class name.
+     */
     private String csvClassName;
 
+    /**
+     * Delimeter used in the csv file. Defaults to ",".
+     */
     private String delimeter;
 
+    /**
+     * Path to the java source directory of your project. Default is the standard Gradle file structure,
+     * "src/main/java/"
+     * Can be modified using the appropriate setter.
+     */
     private String srcDirPath;
 
+    /**
+     * Path to the java source directory of your project. Default is the standard Gradle file structure,
+     * "src/main/java/"
+     * Can be modified using the appropriate setter.
+     */
     private File srcDirFileObject;
 
+    /**
+     * Path to the java build directory of your project. Default is the standard Gradle file structure.
+     * "build/classes/java/main/"
+     * Can be modified using the appropriate setter.
+     */
     private String buildDirPath;
 
+    /**
+     * Path to the java build directory of your project. Default is the standard Gradle file structure.
+     * "build/classes/java/main/"
+     * Can be modified using the appropriate setter.
+     */
     private File buildDirFileObject;
 
+    /**
+     * Default Constructor.
+     */
     public AutoReadCSV()
     {
 
     }
 
+    /**
+     * Creates an AutoReadCSV instance using a String filepath. All other fields are initialized to default
+     * values to maximize ease of use but can be overridden with the relevant setter.
+     * @param csvFilePath representation of the path to the CSV file the user wants to read from.
+     */
     public AutoReadCSV(String csvFilePath) {
         this.csvFilePath = csvFilePath;
         this.csvFileObject = new File(csvFilePath);
@@ -69,6 +110,11 @@ public class AutoReadCSV implements ReadCSV {
         this.srcDirFileObject = new File("src/main/java/");
     }
 
+    /**
+     * Creates an AutoReadCSV instance using a String filepath. All other fields are initialized to default
+     * values to maximize ease of use but can be overridden with the relevant setter.
+     * @param csvFileObject representation of the path to the CSV file the user wants to read from.
+     */
     public AutoReadCSV(File csvFileObject) {
         this.csvFileObject = csvFileObject;
         this.csvFilePath = csvFileObject.toString();
@@ -93,7 +139,7 @@ public class AutoReadCSV implements ReadCSV {
                 //if class already exists>>>
                 Class CSVClass = Class.forName(csvClassName);
                 //make sure class "existing" is not just lingering .class file
-                FileReader CSVClassReader = new FileReader(String.format("src/main/java/%s.java", csvClassName));
+                FileReader CSVClassReader = new FileReader(String.format("%s%s.java", srcDirPath, csvClassName));
                 System.out.println(String.format("CLASS %s EXISTS", csvClassName));
                 return readCSVfromClass(CSVClass);
             }catch(ClassNotFoundException | FileNotFoundException ex)
@@ -125,7 +171,7 @@ public class AutoReadCSV implements ReadCSV {
         }
 
         boolean success = compiler.getTask(null, fileManager, null, null, null,
-                        fileManager.getJavaFileObjectsFromFiles(Arrays.asList(new File(String.format("src/main/java/%s.java", csvClassName)))))
+                        fileManager.getJavaFileObjectsFromFiles(Arrays.asList(new File(String.format("%s%s.java", srcDirPath, csvClassName)))))
                 .call();
         try {
             fileManager.close();
@@ -379,6 +425,11 @@ public class AutoReadCSV implements ReadCSV {
             return results;
         }
 
+    /**
+     * Build ColumnCSV objects and determines their datatype quickly by calling <code>intuitDatatype</code> with a parallel stream.
+     * This facilitates the creation of a POJO structure mapped to the CSV.
+      * @return Every single column from the CSV file and relevant information from it including datatypes, cells as a string, header names, etc.
+     */
     private ArrayList<ColumnCSV> buildColumns()
     {
         Scanner fileScnr = null;
@@ -446,7 +497,12 @@ public class AutoReadCSV implements ReadCSV {
         return columns;
     }
 
-    //Logic to determine datatype. Options: String, Double, Integer, Boolean, LocalDate, LocalDateTime
+    /**
+     * Logic to determine the best datatype of the String representation of cells form a single column. This method should be called using a
+     * parallelStream. Strives to be quick while also guaranteeing that the highest resolution supported datatype is chosen.
+     * @param columnData
+     * @return Class of the highest resolution supported datatype for a column.
+     */
     private Object intuitDatatype(ArrayList<String> columnData)
     {
         Class cellBestClass = String.class;
@@ -682,6 +738,12 @@ public class AutoReadCSV implements ReadCSV {
 
     }
 
+    /**
+     * Build POJO class file mapped to the CSV file. This method does not dynamically compile the class, that occurs in the
+     * <code>readCSV()</code> method after the class has been created.
+     * @param columns All of the ColumnCSV objects, with the datatype instantiated, from the relevant CSV file.
+     * @throws IOException
+     */
     private void buildPOJO(ArrayList<ColumnCSV> columns) throws IOException {
         //ensure no duplicate named columns
         ArrayList<String> colNames = new ArrayList<>();
