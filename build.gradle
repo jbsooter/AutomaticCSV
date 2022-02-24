@@ -72,8 +72,10 @@ publishing {
             url = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
             version = "0.1.0"
             credentials {
-                username = System.getenv("MAVEN_USERNAME")
-                password = System.getenv("MAVEN_PASSWORD")
+                def usernameMVN = findProperty("MAVEN_USERNAME")
+                def passwordMVN = findProperty("MAVEN_PASSWORD")
+                username = usernameMVN
+                password = passwordMVN
             }
         }
     }
