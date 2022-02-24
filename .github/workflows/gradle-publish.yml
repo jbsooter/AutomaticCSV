@@ -28,5 +28,5 @@ jobs:
         env:
           MAVEN_USERNAME: ${{ secrets.MAVEN_PASSWORD }}
           MAVEN_PASSWORD: ${{ secrets.MAVEN_USERNAME }}
-          signingKey: ${{ secrets.SIGNINGKEY }}
-          signingPassword: ${{ secrets.SIGNINGPASSWORD }}
+          ORG_GRADLE_PROJECT_signingKey: ${{ secrets.SIGNINGKEY }}
+          ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.SIGNINGPASSWORD }}
