@@ -16,7 +16,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Allows user to read a CSV file (headers assumed) and parse into an <code>ArrayList<></?></code> of Java objects, with no existing class infrastructure.
+ * Allows user to read a CSV file (headers assumed) and parse into an <code>ArrayList<>/code> of Java objects, with no existing class infrastructure.
  *
  * If the CSV file is being read in for the first time, and there is no existing POJO class, the file is read in as String,
  * and datatypes are determined programmatically for each column.
@@ -127,10 +127,10 @@ public class AutoReadCSV implements ReadCSV {
     }
 
     /**
-     * Read in data from the CSV at the filepath specified when the <code>AutoReadCSV<code/> object was instantiated.
+     * Read in data from the CSV at the filepath specified when the AutoReadCSV object was instantiated.
      * @param <T> Type of Objects in ArrayList storing data from the csv. On first run, this should be Object. Once the class representing
      * the CSV has been generated, this can be changed to that type to enable full functionality when interacting with the ArrayList.
-     * @return <code>ArrayList<T></code> of Objects storing the CSV data.
+     * @return ArrayList of Objects storing the CSV data.
      */
     public <T> ArrayList<T> readCSV()  {
 
