@@ -33,7 +33,7 @@ publishing {
                     from components.java
             pom {
                 name = 'AutomaticCSV'
-                description = 'A lightweight library to automatically parse any CSV into Java Objects. '
+                description = 'A lightweight library to automatically parse CSV files into Java Objects. '
                 url = 'https://github.com/jbsooter/AutomaticCSV'
                 licenses {
                     license {
@@ -70,10 +70,10 @@ publishing {
         maven {
             name = "OSSRH"
             url = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
-            version = "0.1.0"
+            version = "0.1.1"
             credentials {
-                username = findProperty("MAVENUSR")
-                password = findProperty("MAVENPWD")
+                username = findProperty("MVNUSR")
+                password =  findProperty("MVNPWD")
               
             }
         }
