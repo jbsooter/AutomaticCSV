@@ -6,7 +6,7 @@ plugins {
 
 group 'io.github.jbsooter'
 //version = "1.0-SNAPSHOT"
-version '0.1.0'
+version '0.1.1'
 
 java {
     withJavadocJar()
@@ -28,12 +28,12 @@ publishing {
         mavenJava(MavenPublication) {
                     groupId = 'io.github.jbsooter'
                     artifactId = 'AutomaticCSV'
-                    version = '0.1.0'
+                    version = '0.1.1'
 
                     from components.java
             pom {
                 name = 'AutomaticCSV'
-                description = 'A lightweight library to automatically parse any CSV file into an ArrayList of Java Objects. '
+                description = 'A lightweight library to automatically parse any CSV into Java Objects. '
                 url = 'https://github.com/jbsooter/AutomaticCSV'
                 licenses {
                     license {
@@ -72,8 +72,8 @@ publishing {
             url = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
             version = "0.1.0"
             credentials {
-                username = findProperty("MAVEN_USERNAME")
-                password = findProperty("MAVEN_PASSWORD")
+                username = findProperty("MAVENUSR")
+                password = findProperty("MAVENPWD")
               
             }
         }
