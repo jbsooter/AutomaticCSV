@@ -16,7 +16,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Allows user to read a CSV file (headers assumed) and parse into an <code>ArrayList<>/code> of Java objects, with no existing class infrastructure.
+ * Allows user to read a CSV file (headers assumed) and parse into an ArrayList of Java objects, with no existing class infrastructure.
  *
  * If the CSV file is being read in for the first time, and there is no existing POJO class, the file is read in as String,
  * and datatypes are determined programmatically for each column.
@@ -26,8 +26,8 @@ import java.util.regex.Pattern;
  * If the CSV file has been read in previously, AutomaticCSV skips to the line by line parsing step. This saves a substantial amount of time and preserves user added
  * class methods and constructors.
  *
- * The <code>@CSVField</code> and <code>@CSVConstructor</code> annotations intentionally facilitate robust protections against destructive user modifications to the class
- * representing the CSV. So long as the <code>@CSVConstructor</code> annotated constructor is not modified, and all <code>@CSVField</code> annotated fields exist
+ * The @CSVField and @CSVConstructor annotations intentionally facilitate robust protections against destructive user modifications to the class
+ * representing the CSV. So long as the @CSVConstructor annotated constructor is not modified, and all @CSVField annotated fields exist
  * somewhere in the Class, in any order, the CSV can still be parsed into objects.
  *
  * User modification of the CSV-representative class is encouraged and is behind the philosophy of creating an automated method of reading in CSVs as POJOs rather
@@ -407,7 +407,7 @@ public class AutoReadCSV implements ReadCSV {
         }
 
     /**
-     * Build ColumnCSV objects and determines their datatype quickly by calling <code>intuitDatatype</code> with a parallel stream.
+     * Build ColumnCSV objects and determines their datatype quickly by calling intuitDatatype with a parallel stream.
      * This facilitates the creation of a POJO structure mapped to the CSV.
       * @return Every single column from the CSV file and relevant information from it including datatypes, cells as a string, header names, etc.
      */
@@ -718,7 +718,7 @@ public class AutoReadCSV implements ReadCSV {
 
     /**
      * Build POJO class file mapped to the CSV file. This method does not dynamically compile the class, that occurs in the
-     * <code>readCSV()</code> method after the class has been created.
+     * readCSV() method after the class has been created.
      * @param columns All of the ColumnCSV objects, with the datatype instantiated, from the relevant CSV file.
      * @throws IOException
      */
