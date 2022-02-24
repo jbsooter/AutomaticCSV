@@ -25,15 +25,12 @@ dependencies {
 
 publishing {
     publications {
-        maven(MavenPublication)
-                {
+        mavenJava(MavenPublication) {
                     groupId = 'io.github.jbsooter'
                     artifactId = 'AutomaticCSV'
                     version = '0.1.0'
 
                     from components.java
-                }
-        mavenJava(MavenPublication) {
             pom {
                 name = 'AutomaticCSV'
                 description = 'A lightweight library to automatically parse any CSV file into an ArrayList of Java Objects. '
