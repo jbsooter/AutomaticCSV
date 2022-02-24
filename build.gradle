@@ -1,9 +1,17 @@
 plugins {
     id 'java-library'
+    id 'maven-publish'
+    id 'signing'
 }
 
 group 'io.github.jbsooter'
-version '1.0-SNAPSHOT'
+//version = "1.0-SNAPSHOT"
+version '0.1.0'
+
+java {
+    withJavadocJar()
+    withSourcesJar()
+}
 
 repositories {
     mavenCentral()
@@ -12,8 +20,71 @@ repositories {
 dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
+
 }
 
+publishing {
+    publications {
+        maven(MavenPublication)
+                {
+                    groupId = 'io.github.jbsooter'
+                    artifactId = 'AutomaticCSV'
+                    version = '0.1.0'
+
+                    from components.java
+                }
+        mavenJava(MavenPublication) {
+            pom {
+                name = 'AutomaticCSV'
+                description = 'A lightweight library to automatically parse any CSV file into an ArrayList of Java Objects. '
+                url = 'https://github.com/jbsooter/AutomaticCSV'
+                licenses {
+                    license {
+                        name = 'MIT License'
+                        url = 'https://opensource.org/licenses/MIT'
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'jbsooter'
+                        name = 'John Blake Sooter'
+                        email = 'jblakesooter@gmail.com'
+                    }
+                }
+                scm {
+                    connection = 'https://github.com/jbsooter/AutomaticCSV.git'
+                    developerConnection = 'https://github.com/jbsooter/AutomaticCSV.git'
+                    url = 'https://github.com/jbsooter/AutomaticCSV'
+                }
+            }
+            versionMapping {
+                usage('java-api') {
+                    fromResolutionOf('runtimeClasspath')
+                }
+                usage('java-runtime') {
+                    fromResolutionResult()
+                }
+            }
+
+        }
+    }
+
+    repositories {
+        maven {
+            name = "OSSRH"
+            url = "s01.oss.sonatype.org"
+            version = "0.1.0"
+            credentials {
+                username = System.getenv("MAVEN_USERNAME")
+                password = System.getenv("MAVEN_PASSWORD")
+            }
+        }
+    }
+}
+
+signing {
+    sign publishing.publications.mavenJava
+}
 test {
     useJUnitPlatform()
 }
