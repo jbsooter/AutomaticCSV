@@ -26,7 +26,7 @@ jobs:
         with:
           arguments: publish
         env:
-          ORG_GRADLE_PROJECT_MAVEN_USERNAME: ${{ secrets.MAVEN_PASSWORD }}
-          ORG_GRADLE_PROJECT_MAVEN_PASSWORD: ${{ secrets.MAVEN_USERNAME }}
+          ORG_GRADLE_PROJECT_MAVENUSR: ${{ secrets.SONATYPEUSERNAME }}
+          ORG_GRADLE_PROJECT_MAVENPWD: ${{ secrets.SONATYPEPASSWORD }}
           ORG_GRADLE_PROJECT_signingKey: ${{ secrets.SIGNINGKEY }}
           ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.SIGNINGPASSWORD }}
