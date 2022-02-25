@@ -11,10 +11,20 @@ Take advantage of the flexibility and power of the traditional Java object struc
 1. Add the AutomaticCSV dependancy to your Gradle or Maven Project. ([Maven Central](https://mvnrepository.com/artifact/io.github.jbsooter/AutomaticCSV))
 
   ```Java
+  //Gradle
   implementation 'io.github.jbsooter:AutomaticCSV:0.1.1'
   ```
+  
+  ```Java
+  //Maven
+  <dependency>
+  <groupId>io.github.jbsooter</groupId>
+  <artifactId>AutomaticCSV</artifactId>
+  <version>0.1.1</version>
+</dependency>
+  ```
 
-2. Create a Java class file in your Gradle project.
+2. Create a Java class file "AutomaticCSVDemo".
         
  ```Java
  import java.util.ArrayList;
@@ -28,7 +38,7 @@ Take advantage of the flexibility and power of the traditional Java object struc
 
  ```
         
-3. Create a new AutoReadCSV object initialized with the path. 
+3. Create a new AutoReadCSV object initialized with the path of your CSV. 
 
 ```Java
 AutoReadCSV rCSV = new AutoReadCSV("/path/to/csv");
@@ -40,30 +50,43 @@ AutoReadCSV rCSV = new AutoReadCSV("/path/to/csv");
 ArrayList<Object> csvList = rCSV.readCSV();
 ```
 
-5. Run your main method. The Java class representing your CSV file will appear in your source directory.
-
-6. Once you have read in your CSV once, you can change the type of your ArrayList from <Object> to <YourCSVClassName> to take advantage of all class methods. 
-
+5. Run your main method. The Class mapped to your CSV will appear in your source directory. 
+6. Now that the class is created, you can change the type of your ArrayList to the name of the generated class to access all defined class methods. 
 ```Java
 ArrayList<GeneratedClass> csvList = rCSV.readCSV();
 ```
-
-7. Done! Your CSV is represented using the POJO structure. In addition, AutomaticCSV supports users adding fields and methods to the generated class so long as the original annotated fields and constructer matching the CSV file are maintained. (Read more details below). 
-
-### Full Demo Code: 
+7. Print your objects to the console to verify that they were read in correctly. 
 ```Java
- import java.util.ArrayList;
- 
- public class AutomaticCSVDemo  {
-      public static void main(String[] args)
-      {
-        AutoReadCSV rCSV = new AutoReadCSV("/path/to/csv");
-        ArrayList<Object> csvList = rCSV.readCSV();
-        //ArrayList<GeneratedClass> csvList = rCSV.readCSV();
-      }
- }
+for(Object row: csvList)
+{
+System.out.println(row.toString());
+}
 ```
+8. That's it! Read more about the details in the documentation below. 
 
+
+Full Demo Code:
+
+```Java
+import java.util.ArrayList;
+
+public class AutomaticCSVDemo  {
+     public static void main(String[] args)
+     {
+       AutoReadCSV rCSV = new AutoReadCSV("/path/to/csv");
+       ArrayList<Object> csvList = rCSV.readCSV();
+       //after your code has ran once, the class mapped to your CSV will be generated
+       //and can be specified as the type of your ArrayList
+       //ArrayList<GeneratedClass> csvList = rCSV.readCSV();
+       
+       for(Object row: csvList)
+       {
+          System.out.println(row.toString());
+       }
+     }
+}
+
+```
 ## Documentation
 
 TODO
