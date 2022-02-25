@@ -37,7 +37,7 @@ AutoReadCSV rCSV = new AutoReadCSV("/path/to/csv");
 4. Automatically create a Java class mapped to your CSV and read in the CSV as an ArrayList of objects.  
 
 ```Java
-ArrayList<Object> csvList = demo.readCSV();
+ArrayList<Object> csvList = rCSV.readCSV();
 ```
 
 5. Run your main method. The Java class representing your CSV file will appear in your source directory.
@@ -45,7 +45,7 @@ ArrayList<Object> csvList = demo.readCSV();
 6. Once you have read in your CSV once, you can change the type of your ArrayList from <Object> to <YourCSVClassName> to take advantage of all class methods. 
 
 ```Java
-ArrayList<GeneratedClass> csvList = demo.readCSV();
+ArrayList<GeneratedClass> csvList = rCSV.readCSV();
 ```
 
 7. Done! Your CSV is represented using the POJO structure. In addition, AutomaticCSV supports users adding fields and methods to the generated class so long as the original annotated fields and constructer matching the CSV file are maintained. (Read more details below). 
@@ -58,8 +58,8 @@ ArrayList<GeneratedClass> csvList = demo.readCSV();
       public static void main(String[] args)
       {
         AutoReadCSV rCSV = new AutoReadCSV("/path/to/csv");
-        ArrayList<Object> csvList = demo.readCSV();
-        //ArrayList<GeneratedClass> csvList = demo.readCSV();
+        ArrayList<Object> csvList = rCSV.readCSV();
+        //ArrayList<GeneratedClass> csvList = rCSV.readCSV();
       }
  }
 ```
