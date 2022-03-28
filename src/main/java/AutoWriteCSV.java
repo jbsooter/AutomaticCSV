@@ -1,7 +1,9 @@
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Field;
+import java.text.Annotation;
 import java.util.ArrayList;
 
 /**
@@ -65,6 +67,21 @@ public class AutoWriteCSV implements WriteCSV{
         {
             for(int i = 0; i < fieldsToWrite.length; i++)
             {
+                if(fieldsToWrite[i].getDeclaredAnnotations().length > 0)
+                {
+                    if(!fieldsToWrite[i].getDeclaredAnnotations()[0].annotationType().isAnnotationPresent(CSVField.class))
+                    {
+                        continue;
+                        //if field is not annotated with @CSVField(), do not write it to file. Protects against unsupported datatypes.
+                    }
+
+                }
+                else
+                {
+                    continue;
+                    //if field is not annotated at all, do not write it to file. Protects against unsupported datatypes.
+                }
+
                 if(i < fieldsToWrite.length - 1)
                 {
                     writeToCSV.write(fieldsToWrite[i].get(o).toString() + ",");
