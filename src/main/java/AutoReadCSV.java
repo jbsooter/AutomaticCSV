@@ -319,7 +319,7 @@ public class AutoReadCSV implements ReadCSV {
             Map<Integer, String> BooleanTypeIndicator = new HashMap<>();
             while(fileScnr.hasNextLine())
             {
-                String[] row = fileScnr.nextLine().split(delimeter, -1); //-1 protects against ,,
+                String[] row = fileScnr.nextLine().split(delimeter + "(?=([^\"]*\"[^\"]*\")*[^\"]*$)", -1); //-1 protects against ,,
                 //store parsed cell values to create csvClass object
                 Object[] parsedRow = new Object[csvFields.length];
 
@@ -474,7 +474,7 @@ public class AutoReadCSV implements ReadCSV {
 
         //get String[] representation of ALL rows in file
         while (fileScnr.hasNextLine()) {
-            rawRowArrays.add(fileScnr.nextLine().split(delimeter, -1));
+            rawRowArrays.add(fileScnr.nextLine().split(delimeter + "(?=([^\"]*\"[^\"]*\")*[^\"]*$)", -1));
         }
 
         //Scanner for HEADERROW String (Not file)
