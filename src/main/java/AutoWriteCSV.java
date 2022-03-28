@@ -1,7 +1,9 @@
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Field;
+import java.text.Annotation;
 import java.util.ArrayList;
 
 /**
@@ -46,37 +48,65 @@ public class AutoWriteCSV implements WriteCSV{
     public  <typeparam> void writeCSV(ArrayList<typeparam> objectsToWrite) throws IOException, IllegalAccessException {
         FileWriter writeToCSV = new FileWriter(csvFileObject);
 
-        Field[] fieldsToWrite = objectsToWrite.get(0).getClass().getDeclaredFields();
+        Field[] fields = objectsToWrite.get(0).getClass().getDeclaredFields();
 
-        for(int i = 0; i < fieldsToWrite.length; i++)
+        for(Field f: fields)
         {
-            fieldsToWrite[i].setAccessible(true);
-            if(i < fieldsToWrite.length - 1)
+            f.setAccessible(true);
+        }
+
+        ArrayList<Field> fieldsToWrite = new ArrayList<>();
+
+        for(Field f: fields)
+        {
+            if(f.getDeclaredAnnotations().length > 0)
             {
-                writeToCSV.write(fieldsToWrite[i].getName() + ",");
+                if(f.getDeclaredAnnotations()[0].toString().equals("@CSVField()"));
+                {
+                    fieldsToWrite.add(f);
+                }
+            }
+
+        }
+
+        for(int i = 0; i < fieldsToWrite.size(); i++)
+        {
+
+            if(i < fieldsToWrite.size() - 1)
+            {
+                writeToCSV.write(fieldsToWrite.get(i).getName() + ",");
             }
             else
             {
-                writeToCSV.write(fieldsToWrite[i].getName() + "\n");
+                writeToCSV.write(fieldsToWrite.get(i).getName() + "\n");
             }
         }
 
         for(Object o: objectsToWrite)
         {
-            for(int i = 0; i < fieldsToWrite.length; i++)
+            for(int i = 0; i < fieldsToWrite.size(); i++)
             {
-                if(i < fieldsToWrite.length - 1)
+
+                if(i < fieldsToWrite.size() - 1)
                 {
-                    writeToCSV.write(fieldsToWrite[i].get(o).toString() + ",");
+
+                    if(fieldsToWrite.get(i).get(o).toString().contains(","))
+                    {
+                        writeToCSV.write("\"" + fieldsToWrite.get(i).get(o).toString() + "\",");
+                    }
+                    else
+                    {
+                        writeToCSV.write(fieldsToWrite.get(i).get(o).toString() + ",");
+                    }
+
                 }
                 else
                 {
-                    writeToCSV.write(fieldsToWrite[i].get(o).toString() + "\n");
+                    writeToCSV.write(fieldsToWrite.get(i).get(o).toString() + "\n");
                 }
             }
         }
 
         writeToCSV.close();
-
     }
 }

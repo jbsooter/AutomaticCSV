@@ -6,6 +6,8 @@ import java.io.*;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -87,7 +89,13 @@ public class AutoReadCSV implements ReadCSV {
     private File buildDirFileObject;
 
     /**
-     * Default Constructor.
+     * URL object pointing to the online location of a CSV file.
+     */
+    private URL csvFileURL;
+
+
+    /**
+     * Default Constructor
      */
     public AutoReadCSV()
     {
@@ -111,9 +119,9 @@ public class AutoReadCSV implements ReadCSV {
     }
 
     /**
-     * Creates an AutoReadCSV instance using a String filepath. All other fields are initialized to default
+     * Creates an AutoReadCSV instance using a File filepath. All other fields are initialized to default
      * values to maximize ease of use but can be overridden with the relevant setter.
-     * @param csvFileObject representation of the path to the CSV file the user wants to read from.
+     * @param csvFileObject File object representation of the path to the CSV file the user wants to read from.
      */
     public AutoReadCSV(File csvFileObject) {
         this.csvFileObject = csvFileObject;
@@ -124,6 +132,23 @@ public class AutoReadCSV implements ReadCSV {
         this.buildDirFileObject = new File("build/classes/java/main/");
         this.srcDirPath = "src/main/java/";
         this.srcDirFileObject = new File("src/main/java");
+    }
+
+    /**
+     * Creates an AutoReadCSV instance using a URL object pointing to a CSV file at an online location. A preferredFileName must be specified ex: name.csv.
+     * All other fields are initialized to default values but can be easily overridden with the relevant setter.
+     * @param csvFileURL URL object for the online location of a CSV file. (Ex: Github)
+     * @param preferredFileName Name that you would prefer the CSV/Class to be called.
+     */
+    public AutoReadCSV(URL csvFileURL, String preferredFileName)
+    {
+        this.delimeter = ",";
+        this.buildDirPath = "build/classes/java/main/";
+        this.buildDirFileObject = new File("build/classes/java/main/");
+        this.srcDirPath = "src/main/java/";
+        this.srcDirFileObject = new File("src/main/java");
+        this.csvFileURL = csvFileURL;
+        this.csvClassName = createClassName(preferredFileName);
     }
 
     /**
@@ -197,7 +222,15 @@ public class AutoReadCSV implements ReadCSV {
             Scanner fileScnr = null;
             try {
                 fileScnr = new Scanner(new File(csvFilePath));
-            } catch (FileNotFoundException e2x) {
+            } catch ( NullPointerException ex) {
+                try {
+                    fileScnr = new Scanner(csvFileURL.openConnection().getInputStream());
+                } catch (IOException e) {
+                    System.out.println("ERROR: CSV file not found at the given URL. Check your URL. ");
+                }
+            }
+            catch(FileNotFoundException ex2)
+            {
                 System.out.println("ERROR: CSV File Not Found. Check your File Path. ");
             }
 
@@ -286,7 +319,7 @@ public class AutoReadCSV implements ReadCSV {
             Map<Integer, String> BooleanTypeIndicator = new HashMap<>();
             while(fileScnr.hasNextLine())
             {
-                String[] row = fileScnr.nextLine().split(delimeter);
+                String[] row = fileScnr.nextLine().split(delimeter + "(?=([^\"]*\"[^\"]*\")*[^\"]*$)", -1); //-1 protects against ,,
                 //store parsed cell values to create csvClass object
                 Object[] parsedRow = new Object[csvFields.length];
 
@@ -416,13 +449,22 @@ public class AutoReadCSV implements ReadCSV {
         Scanner fileScnr = null;
         try {
             fileScnr = new Scanner(new File(csvFilePath));
-        } catch (FileNotFoundException e2x) {
-            System.out.println("Error: File Not Found");
+        } catch ( NullPointerException ex) {
+            try {
+                fileScnr = new Scanner(new BufferedReader(new InputStreamReader(csvFileURL.openStream())));
+            } catch (IOException e) {
+                System.out.println("ERROR: CSV file not found at the given URL. Check your URL. ");
+            }
+        }
+        catch(FileNotFoundException ex2)
+        {
+            System.out.println("ERROR: CSV File Not Found. Check your File Path. ");
         }
 
         String headerRow = null;
         if (fileScnr.hasNextLine()) {
             headerRow = fileScnr.nextLine();
+            System.out.println(headerRow);
         } else {
             System.out.println("ERROR: CSV Not Found. ");
         }
@@ -432,7 +474,7 @@ public class AutoReadCSV implements ReadCSV {
 
         //get String[] representation of ALL rows in file
         while (fileScnr.hasNextLine()) {
-            rawRowArrays.add(fileScnr.nextLine().split(delimeter));
+            rawRowArrays.add(fileScnr.nextLine().split(delimeter + "(?=([^\"]*\"[^\"]*\")*[^\"]*$)", -1));
         }
 
         //Scanner for HEADERROW String (Not file)
