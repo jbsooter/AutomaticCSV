@@ -69,7 +69,7 @@ public class AutoWriteCSV implements WriteCSV{
             {
                 if(fieldsToWrite[i].getDeclaredAnnotations().length > 0)
                 {
-                    if(!fieldsToWrite[i].getDeclaredAnnotations()[0].annotationType().isAnnotationPresent(CSVField.class))
+                    if(!fieldsToWrite[i].getDeclaredAnnotations()[0].toString().equals("@CSVField()"))
                     {
                         continue;
                         //if field is not annotated with @CSVField(), do not write it to file. Protects against unsupported datatypes.
@@ -78,13 +78,29 @@ public class AutoWriteCSV implements WriteCSV{
                 }
                 else
                 {
+                    //if end of fields, newline
+                    if( i == fieldsToWrite.length - 1)
+                    {
+                        writeToCSV.write("\n");
+                    }
+                    //skip unannotated
                     continue;
+
                     //if field is not annotated at all, do not write it to file. Protects against unsupported datatypes.
                 }
 
                 if(i < fieldsToWrite.length - 1)
                 {
-                    writeToCSV.write(fieldsToWrite[i].get(o).toString() + ",");
+
+                    if(fieldsToWrite[i].get(o).toString().contains(","))
+                    {
+                        writeToCSV.write("\"" + fieldsToWrite[i].get(o).toString() + "\",");
+                    }
+                    else
+                    {
+                        writeToCSV.write(fieldsToWrite[i].get(o).toString() + ",");
+                    }
+
                 }
                 else
                 {
