@@ -12,7 +12,7 @@ Take advantage of the flexibility and power of the traditional Java object struc
 
   ```Java
   //Gradle
-  implementation 'io.github.jbsooter:AutomaticCSV:0.1.1'
+  implementation 'io.github.jbsooter:AutomaticCSV:0.1.3'
   ```
   
   ```Java
@@ -20,7 +20,7 @@ Take advantage of the flexibility and power of the traditional Java object struc
   <dependency>
   <groupId>io.github.jbsooter</groupId>
   <artifactId>AutomaticCSV</artifactId>
-  <version>0.1.1</version>
+  <version>0.1.3</version>
 </dependency>
   ```
 
