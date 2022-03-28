@@ -6,7 +6,7 @@ plugins {
 
 group 'io.github.jbsooter'
 //version = "1.0-SNAPSHOT"
-version '0.1.1'
+version '0.1.3'
 
 java {
     withJavadocJar()
@@ -28,7 +28,7 @@ publishing {
         mavenJava(MavenPublication) {
                     groupId = 'io.github.jbsooter'
                     artifactId = 'AutomaticCSV'
-                    version = '0.1.1'
+                    version = '0.1.3'
 
                     from components.java
             pom {
@@ -70,7 +70,7 @@ publishing {
         maven {
             name = "OSSRH"
             url = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
-            version = "0.1.1"
+            version = "0.1.3"
             credentials {
                 username = findProperty("MVNUSR")
                 password =  findProperty("MVNPWD")
