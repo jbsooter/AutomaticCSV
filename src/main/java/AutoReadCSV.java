@@ -978,7 +978,10 @@ public class AutoReadCSV implements ReadCSV {
 
             buildCSVClass.write("return 1;\n}\n");
 
-            buildCSVClass.write("else\n{\nreturn -1;\n}\n}\n}");
+            buildCSVClass.write(String.format("else if(o1.get%s() > o2.get%s()){\n", col.getColumnName(), col.getColumnName()));
+
+            buildCSVClass.write("return -1;\n}\n");
+            buildCSVClass.write("else\n{\nreturn 0;\n}\n}\n}");
 
         }
         //Close FileWriter
