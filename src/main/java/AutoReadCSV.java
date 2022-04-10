@@ -816,6 +816,11 @@ public class AutoReadCSV implements ReadCSV {
             buildCSVClass.write("import java.time.LocalDate;\n\n");
         }
 
+        //import comparator
+        buildCSVClass.write("import java.util.Comparator;\n");
+        //import Predicate
+        buildCSVClass.write("import java.util.function.Predicate;\n");
+
         //Write Class Signature to File
         try {
             buildCSVClass.write(String.format("public class %s {\n", csvClassName));
@@ -868,9 +873,42 @@ public class AutoReadCSV implements ReadCSV {
             buildCSVClass.write(String.format("public void set%s(%s %s) {\nthis.%s = %s;\n}\n\n", col.getColumnName(), col.getColumnDataType(), col.getColumnName(), col.getColumnName(), col.getColumnName()));
         }
 
+        //add predicates equal
+        for(ColumnCSV col: columns)
+        {
+            if(col.getColumnDataType().equals("String"))
+            {
+                continue;
+            }
+            else if(col.getColumnDataType().equals("LocalDate"))
+            {
+                continue;
+            }
+            else if(col.getColumnDataType().equals("LocalDateTime"))
+            {
+                continue;
+            }
+            else if(col.getColumnDataType().equals("Boolean"))
+            {
+                buildCSVClass.write(String.format("public static Predicate<%s> %sIsEqualTo(%s %s)\n{\n", csvClassName, col.getColumnName(), col.getColumnDataType(), col.getColumnName().toLowerCase()));
+                buildCSVClass.write(String.format("return p -> p.get%s() == true;\n}\n", col.getColumnName()));
+                continue;
+
+            }
+            buildCSVClass.write(String.format("public static Predicate<%s> %sIsEqualTo(%s %s)\n{\n", csvClassName, col.getColumnName(), col.getColumnDataType(), col.getColumnName().toLowerCase()));
+            buildCSVClass.write(String.format("return p -> p.get%s() == p.get%s();\n}\n", col.getColumnName(), col.getColumnName()));
+
+            buildCSVClass.write(String.format("public static Predicate<%s> %sIsLessThanOrEqualTo(%s %s)\n{\n", csvClassName, col.getColumnName(), col.getColumnDataType(), col.getColumnName().toLowerCase()));
+            buildCSVClass.write(String.format("return p -> p.get%s() <= p.get%s();\n}\n", col.getColumnName(), col.getColumnName()));
+
+            buildCSVClass.write(String.format("public static Predicate<%s> %sIsGreaterThanOrEqualTo(%s %s)\n{\n", csvClassName, col.getColumnName(), col.getColumnDataType(), col.getColumnName().toLowerCase()));
+            buildCSVClass.write(String.format("return p -> p.get%s() >= p.get%s();\n}\n", col.getColumnName(), col.getColumnName()));
+
+        }
+
+
         //write toString signature to File
         buildCSVClass.write("@Override()\npublic String toString() {\nreturn ");
-
         //Create toString String
         int j = 0;
         for (ColumnCSV col : columns) {
@@ -880,6 +918,67 @@ public class AutoReadCSV implements ReadCSV {
                 buildCSVClass.write(String.format("\"%s: \" +  %s + \"  \";\n}\n\n}", col.getColumnName(), col.getColumnName()));
             }
             j++;
+
+        }
+
+        //add comparables ascending
+        for (ColumnCSV col : columns)
+        {
+            if(col.getColumnDataType().equals("LocalDate") || col.getColumnDataType().equals("LocalDateTime"))
+            {
+                continue; //TODO: support comparable in future
+            }
+
+           buildCSVClass.write(String.format("class SortAscendingBy%s implements Comparator<%s> {\n", col.getColumnName(), csvClassName));
+
+           buildCSVClass.write(String.format("public int compare(%s o1, %s o2) {\n", csvClassName, csvClassName));
+
+            if(col.getColumnDataType().equals("String"))
+            {
+                buildCSVClass.write(String.format("return o1.get%s().compareToIgnoreCase(o2.get%s());\n}\n}\n", col.getColumnName(), col.getColumnName()));
+                continue;
+            }
+
+            else if(col.getColumnDataType().equals("Boolean"))
+            {
+                buildCSVClass.write(String.format("return Boolean.compare(o1.get%s(),o2.get%s());}\n}\n", col.getColumnName(), col.getColumnName()));
+                continue;
+            }
+           buildCSVClass.write(String.format("if(o1.get%s() < o2.get%s()){\n", col.getColumnName(), col.getColumnName()));
+
+           buildCSVClass.write("return -1;\n}\n");
+
+           buildCSVClass.write("else\n{\nreturn 1;\n}\n}\n}");
+
+        }
+
+        //comparables descending
+        for (ColumnCSV col : columns)
+        {
+            if(col.getColumnDataType().equals("LocalDate") || col.getColumnDataType().equals("LocalDateTime"))
+            {
+                continue; //TODO: support comparable in future
+            }
+
+            buildCSVClass.write(String.format("class SortDescendingBy%s implements Comparator<%s> {\n", col.getColumnName(), csvClassName));
+
+            buildCSVClass.write(String.format("public int compare(%s o1, %s o2) {\n", csvClassName, csvClassName));
+
+            if(col.getColumnDataType().equals("String"))
+            {
+                buildCSVClass.write(String.format("return o1.get%s().compareToIgnoreCase(o2.get%s());\n}\n}\n", col.getColumnName(), col.getColumnName()));
+                continue;
+            }
+            else if(col.getColumnDataType().equals("Boolean"))
+            {
+                buildCSVClass.write(String.format("return -Boolean.compare(o1.get%s(),o2.get%s());}\n}\n", col.getColumnName(), col.getColumnName()));
+                continue;
+            }
+            buildCSVClass.write(String.format("if(o1.get%s() < o2.get%s()){\n", col.getColumnName(), col.getColumnName()));
+
+            buildCSVClass.write("return 1;\n}\n");
+
+            buildCSVClass.write("else\n{\nreturn -1;\n}\n}\n}");
 
         }
         //Close FileWriter
