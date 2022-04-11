@@ -314,9 +314,7 @@ public class AutoReadCSV implements ReadCSV {
                     quickCSVConstructor = c;
                 }
             }
-
-            Map<Integer, String> LocalDateTypeIndicator = new HashMap<>();
-            Map<Integer, String> BooleanTypeIndicator = new HashMap<>();
+            
             while(fileScnr.hasNextLine())
             {
                 String[] row = fileScnr.nextLine().split(delimeter + "(?=([^\"]*\"[^\"]*\")*[^\"]*$)", -1); //-1 protects against ,,
@@ -327,38 +325,6 @@ public class AutoReadCSV implements ReadCSV {
 
                 {
                     String cleanCell = cleanCell(row[i]);
-                        if(LocalDateTypeIndicator.containsKey(i))
-                        {
-                            try
-                            {
-                                LocalDate.parse(cleanCell, DateTimeFormatter.ofPattern(LocalDateTypeIndicator.get(i)));
-                                break;
-                            }catch(DateTimeParseException ex)
-                            {
-                                continue;
-                            }
-                        }
-
-                    if(BooleanTypeIndicator.containsKey(i))
-                    {
-
-                            if(cleanCell.equalsIgnoreCase("yes") || cleanCell.equalsIgnoreCase("true") || checkIntTrue(cleanCell)) //checkint true to take care of integer bool
-                            {
-                                parsedRow[i] = true;
-                                break;
-                            }
-                            else if(cleanCell.equalsIgnoreCase("no") || cleanCell.equalsIgnoreCase("false") || checkIntFalse(cleanCell))
-                            {
-                                parsedRow[i] = true;
-                                break;
-                            }
-                            else
-                            {
-                                continue;
-
-                            }
-
-                    }
 
                     if(csvFields[i].equals(Double.class))
                     {
@@ -396,23 +362,18 @@ public class AutoReadCSV implements ReadCSV {
                         }catch(DateTimeParseException exDt) {
                             try {
                                 parsedRow[i] = LocalDate.parse(cleanCell, DateTimeFormatter.ofPattern("M/d/yyyy"));
-                                LocalDateTypeIndicator.put(i, "M/d/yyyy");
                             } catch (DateTimeParseException exDt2) {
                                 try {
                                     parsedRow[i] = LocalDate.parse(cleanCell, DateTimeFormatter.ofPattern("M/d/yy"));
-                                    LocalDateTypeIndicator.put(i, "M/d/yy");
                                 } catch (DateTimeParseException exDt3) {
                                     try {
                                         parsedRow[i] = LocalDate.parse(cleanCell, DateTimeFormatter.ofPattern("M-d-yyyy"));
-                                        LocalDateTypeIndicator.put(i, "M-d-yyyy");
                                     } catch (DateTimeParseException exDt4) {
                                         try {
                                             parsedRow[i] = LocalDate.parse(cleanCell, DateTimeFormatter.ofPattern("M-d-yy"));
-                                            LocalDateTypeIndicator.put(i, "M-d-yy");
                                         } catch (DateTimeParseException exDt5) {
                                             try {
                                                 parsedRow[i] = LocalDate.parse(cleanCell, DateTimeFormatter.ofPattern("yyyy/M/d"));
-                                                LocalDateTypeIndicator.put(i, "yyyy/M/d");
                                             } catch (DateTimeParseException exDt6) {
                                                 //should never be reached due to column building steps
                                             }
