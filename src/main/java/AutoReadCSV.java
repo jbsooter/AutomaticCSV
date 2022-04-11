@@ -907,19 +907,7 @@ public class AutoReadCSV implements ReadCSV {
         }
 
 
-        //write toString signature to File
-        buildCSVClass.write("@Override()\npublic String toString() {\nreturn ");
-        //Create toString String
-        int j = 0;
-        for (ColumnCSV col : columns) {
-            if (j < columns.size() - 1) {
-                buildCSVClass.write(String.format("\"%s: \" +  %s + \"  \"\n + ", col.getColumnName(), col.getColumnName()));
-            } else {
-                buildCSVClass.write(String.format("\"%s: \" +  %s + \"  \";\n}\n\n}", col.getColumnName(), col.getColumnName()));
-            }
-            j++;
 
-        }
 
         //add comparables ascending
         for (ColumnCSV col : columns)
@@ -929,7 +917,7 @@ public class AutoReadCSV implements ReadCSV {
                 continue; //TODO: support comparable in future
             }
 
-           buildCSVClass.write(String.format("class SortAscendingBy%s implements Comparator<%s> {\n", col.getColumnName(), csvClassName));
+           buildCSVClass.write(String.format("static class SortAscendingBy%s implements Comparator<%s> {\n", col.getColumnName(), csvClassName));
 
            buildCSVClass.write(String.format("public int compare(%s o1, %s o2) {\n", csvClassName, csvClassName));
 
@@ -948,7 +936,7 @@ public class AutoReadCSV implements ReadCSV {
 
            buildCSVClass.write("return -1;\n}\n");
 
-           buildCSVClass.write("else\n{\nreturn 1;\n}\n}\n}");
+           buildCSVClass.write("else\n{\nreturn 1;\n}\n}\n}\n");
 
         }
 
@@ -960,7 +948,7 @@ public class AutoReadCSV implements ReadCSV {
                 continue; //TODO: support comparable in future
             }
 
-            buildCSVClass.write(String.format("class SortDescendingBy%s implements Comparator<%s> {\n", col.getColumnName(), csvClassName));
+            buildCSVClass.write(String.format("static class SortDescendingBy%s implements Comparator<%s> {\n", col.getColumnName(), csvClassName));
 
             buildCSVClass.write(String.format("public int compare(%s o1, %s o2) {\n", csvClassName, csvClassName));
 
@@ -981,7 +969,21 @@ public class AutoReadCSV implements ReadCSV {
             buildCSVClass.write(String.format("else if(o1.get%s() > o2.get%s()){\n", col.getColumnName(), col.getColumnName()));
 
             buildCSVClass.write("return -1;\n}\n");
-            buildCSVClass.write("else\n{\nreturn 0;\n}\n}\n}");
+            buildCSVClass.write("else\n{\nreturn 0;\n}\n}\n}\n");
+
+        }
+
+        //write toString signature to File
+        buildCSVClass.write("@Override()\npublic String toString() {\nreturn ");
+        //Create toString String
+        int j = 0;
+        for (ColumnCSV col : columns) {
+            if (j < columns.size() - 1) {
+                buildCSVClass.write(String.format("\"%s: \" +  %s + \"  \"\n + ", col.getColumnName(), col.getColumnName()));
+            } else {
+                buildCSVClass.write(String.format("\"%s: \" +  %s + \"  \";\n}\n\n}", col.getColumnName(), col.getColumnName()));
+            }
+            j++;
 
         }
         //Close FileWriter
