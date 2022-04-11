@@ -314,7 +314,7 @@ public class AutoReadCSV implements ReadCSV {
                     quickCSVConstructor = c;
                 }
             }
-            
+
             while(fileScnr.hasNextLine())
             {
                 String[] row = fileScnr.nextLine().split(delimeter + "(?=([^\"]*\"[^\"]*\")*[^\"]*$)", -1); //-1 protects against ,,
@@ -873,11 +873,6 @@ public class AutoReadCSV implements ReadCSV {
         //add comparables ascending
         for (ColumnCSV col : columns)
         {
-            if(col.getColumnDataType().equals("LocalDate") || col.getColumnDataType().equals("LocalDateTime"))
-            {
-                continue; //TODO: support comparable in future
-            }
-
            buildCSVClass.write(String.format("static class SortAscendingBy%s implements Comparator<%s> {\n", col.getColumnName(), csvClassName));
 
            buildCSVClass.write(String.format("public int compare(%s o1, %s o2) {\n", csvClassName, csvClassName));
@@ -893,6 +888,11 @@ public class AutoReadCSV implements ReadCSV {
                 buildCSVClass.write(String.format("return Boolean.compare(o1.get%s(),o2.get%s());}\n}\n", col.getColumnName(), col.getColumnName()));
                 continue;
             }
+            else if(col.getColumnDataType().equals("LocalDate") || col.getColumnDataType().equals("LocalDateTime"))
+            {
+                buildCSVClass.write(String.format("return -o1.get%s().compareTo(o2.get%s());}\n}\n", col.getColumnName(), col.getColumnName()));
+                continue;
+            }
            buildCSVClass.write(String.format("if(o1.get%s() < o2.get%s()){\n", col.getColumnName(), col.getColumnName()));
 
            buildCSVClass.write("return -1;\n}\n");
@@ -904,11 +904,6 @@ public class AutoReadCSV implements ReadCSV {
         //comparables descending
         for (ColumnCSV col : columns)
         {
-            if(col.getColumnDataType().equals("LocalDate") || col.getColumnDataType().equals("LocalDateTime"))
-            {
-                continue; //TODO: support comparable in future
-            }
-
             buildCSVClass.write(String.format("static class SortDescendingBy%s implements Comparator<%s> {\n", col.getColumnName(), csvClassName));
 
             buildCSVClass.write(String.format("public int compare(%s o1, %s o2) {\n", csvClassName, csvClassName));
@@ -920,7 +915,12 @@ public class AutoReadCSV implements ReadCSV {
             }
             else if(col.getColumnDataType().equals("Boolean"))
             {
-                buildCSVClass.write(String.format("return -Boolean.compare(o1.get%s(),o2.get%s());}\n}\n", col.getColumnName(), col.getColumnName()));
+                buildCSVClass.write(String.format("return -Boolean.compare(o1.get%s(),o2.get%s());}\n}\n}\n", col.getColumnName(), col.getColumnName()));
+                continue;
+            }
+            else if(col.getColumnDataType().equals("LocalDate") || col.getColumnDataType().equals("LocalDateTime"))
+            {
+                buildCSVClass.write(String.format("return o1.get%s().compareTo(o2.get%s());}\n}\n", col.getColumnName(), col.getColumnName()));
                 continue;
             }
             buildCSVClass.write(String.format("if(o1.get%s() < o2.get%s()){\n", col.getColumnName(), col.getColumnName()));
