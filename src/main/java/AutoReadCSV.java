@@ -834,19 +834,20 @@ public class AutoReadCSV implements ReadCSV {
             buildCSVClass.write(String.format("public void set%s(%s %s) {\nthis.%s = %s;\n}\n\n", col.getColumnName(), col.getColumnDataType(), col.getColumnName(), col.getColumnName(), col.getColumnName()));
         }
 
-        //add predicates equal
+        //add predicates
         for(ColumnCSV col: columns)
         {
             if(col.getColumnDataType().equals("String"))
             {
                 continue;
             }
-            else if(col.getColumnDataType().equals("LocalDate"))
+            else if(col.getColumnDataType().equals("LocalDate") || col.getColumnDataType().equals("LocalDateTime"))
             {
-                continue;
-            }
-            else if(col.getColumnDataType().equals("LocalDateTime"))
-            {
+                buildCSVClass.write(String.format("public static Predicate<%s> %sIsBefore(%s %s)\n{\n", csvClassName, col.getColumnName(), col.getColumnDataType(), col.getColumnName().toLowerCase()));
+                buildCSVClass.write(String.format("return p -> p.get%s().isBefore(%s);\n}\n", col.getColumnName(), col.getColumnName().toLowerCase()));
+
+                buildCSVClass.write(String.format("public static Predicate<%s> %sIsAfter(%s %s)\n{\n", csvClassName, col.getColumnName(), col.getColumnDataType(), col.getColumnName().toLowerCase()));
+                buildCSVClass.write(String.format("return p -> p.get%s().isAfter(%s);\n}\n", col.getColumnName(), col.getColumnName().toLowerCase()));
                 continue;
             }
             else if(col.getColumnDataType().equals("Boolean"))
@@ -857,13 +858,13 @@ public class AutoReadCSV implements ReadCSV {
 
             }
             buildCSVClass.write(String.format("public static Predicate<%s> %sIsEqualTo(%s %s)\n{\n", csvClassName, col.getColumnName(), col.getColumnDataType(), col.getColumnName().toLowerCase()));
-            buildCSVClass.write(String.format("return p -> p.get%s() == p.get%s();\n}\n", col.getColumnName(), col.getColumnName()));
+            buildCSVClass.write(String.format("return p -> p.get%s() == %s;\n}\n", col.getColumnName(), col.getColumnName().toLowerCase()));
 
             buildCSVClass.write(String.format("public static Predicate<%s> %sIsLessThanOrEqualTo(%s %s)\n{\n", csvClassName, col.getColumnName(), col.getColumnDataType(), col.getColumnName().toLowerCase()));
-            buildCSVClass.write(String.format("return p -> p.get%s() <= p.get%s();\n}\n", col.getColumnName(), col.getColumnName()));
+            buildCSVClass.write(String.format("return p -> p.get%s() <= %s;\n}\n", col.getColumnName(), col.getColumnName().toLowerCase()));
 
             buildCSVClass.write(String.format("public static Predicate<%s> %sIsGreaterThanOrEqualTo(%s %s)\n{\n", csvClassName, col.getColumnName(), col.getColumnDataType(), col.getColumnName().toLowerCase()));
-            buildCSVClass.write(String.format("return p -> p.get%s() >= p.get%s();\n}\n", col.getColumnName(), col.getColumnName()));
+            buildCSVClass.write(String.format("return p -> p.get%s() >= %s;\n}\n", col.getColumnName(), col.getColumnName().toLowerCase()));
 
         }
 
@@ -915,7 +916,7 @@ public class AutoReadCSV implements ReadCSV {
             }
             else if(col.getColumnDataType().equals("Boolean"))
             {
-                buildCSVClass.write(String.format("return -Boolean.compare(o1.get%s(),o2.get%s());}\n}\n}\n", col.getColumnName(), col.getColumnName()));
+                buildCSVClass.write(String.format("return -Boolean.compare(o1.get%s(),o2.get%s());}\n}\n", col.getColumnName(), col.getColumnName()));
                 continue;
             }
             else if(col.getColumnDataType().equals("LocalDate") || col.getColumnDataType().equals("LocalDateTime"))
