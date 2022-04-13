@@ -781,6 +781,9 @@ public class AutoReadCSV implements ReadCSV {
         buildCSVClass.write("import java.util.Comparator;\n");
         //import Predicate
         buildCSVClass.write("import java.util.function.Predicate;\n");
+        //import hashmap
+        buildCSVClass.write("import java.util.Map;\n");
+        buildCSVClass.write("import java.util.concurrent.ConcurrentHashMap;\n");
 
         //Write Class Signature to File
         try {
@@ -868,8 +871,34 @@ public class AutoReadCSV implements ReadCSV {
 
         }
 
+        //drop by key
+        for(ColumnCSV col: columns)
+        {
+            buildCSVClass.write(String.format("public static Predicate<%s> distinctBy%s()\n{\n", csvClassName, col.getColumnName()));
+            buildCSVClass.write("Map<Object, Boolean> seen = new ConcurrentHashMap<>();\n");
+            buildCSVClass.write(String.format("return t -> seen.putIfAbsent(t.get%s(), Boolean.TRUE) == null;", col.getColumnName()));
 
+            buildCSVClass.write("}\n");
+        }
 
+        //dropbyrow (all)
+        buildCSVClass.write(String.format("public static Predicate<%s> distinctRecords()\n{\n", csvClassName));
+        buildCSVClass.write("Map<Object, Boolean> seen = new ConcurrentHashMap<>();\n");
+        buildCSVClass.write("return t -> seen.putIfAbsent(");
+
+        int plusIndex = 0;
+        for(ColumnCSV col: columns)
+        {
+            buildCSVClass.write(String.format("t.get%s().toString()", col.getColumnName()));
+
+            if(plusIndex < columns.size() - 1)
+            {
+                buildCSVClass.write("+");
+            }
+            plusIndex++;
+        }
+        buildCSVClass.write(", Boolean.TRUE) == null;");
+        buildCSVClass.write("}\n");
 
         //add comparables ascending
         for (ColumnCSV col : columns)
