@@ -783,7 +783,7 @@ public class AutoReadCSV implements ReadCSV {
         buildCSVClass.write("import java.util.function.Predicate;\n");
         //import hashmap
         buildCSVClass.write("import java.util.Map;\n");
-        buildCSVClass.write("import java.util.concurrent.ConcurrentHashMap;\n");
+        buildCSVClass.write("import java.util.concurrent.ConcurrentHashMap;\n\n");
 
         //Write Class Signature to File
         try {
@@ -847,27 +847,27 @@ public class AutoReadCSV implements ReadCSV {
             else if(col.getColumnDataType().equals("LocalDate") || col.getColumnDataType().equals("LocalDateTime"))
             {
                 buildCSVClass.write(String.format("public static Predicate<%s> %sIsBefore(%s %s)\n{\n", csvClassName, col.getColumnName(), col.getColumnDataType(), col.getColumnName().toLowerCase()));
-                buildCSVClass.write(String.format("return p -> p.get%s().isBefore(%s);\n}\n", col.getColumnName(), col.getColumnName().toLowerCase()));
+                buildCSVClass.write(String.format("return p -> p.get%s().isBefore(%s);\n}\n\n", col.getColumnName(), col.getColumnName().toLowerCase()));
 
                 buildCSVClass.write(String.format("public static Predicate<%s> %sIsAfter(%s %s)\n{\n", csvClassName, col.getColumnName(), col.getColumnDataType(), col.getColumnName().toLowerCase()));
-                buildCSVClass.write(String.format("return p -> p.get%s().isAfter(%s);\n}\n", col.getColumnName(), col.getColumnName().toLowerCase()));
+                buildCSVClass.write(String.format("return p -> p.get%s().isAfter(%s);\n}\n\n", col.getColumnName(), col.getColumnName().toLowerCase()));
                 continue;
             }
             else if(col.getColumnDataType().equals("Boolean"))
             {
                 buildCSVClass.write(String.format("public static Predicate<%s> %sIsEqualTo(%s %s)\n{\n", csvClassName, col.getColumnName(), col.getColumnDataType(), col.getColumnName().toLowerCase()));
-                buildCSVClass.write(String.format("return p -> p.get%s() == true;\n}\n", col.getColumnName()));
+                buildCSVClass.write(String.format("return p -> p.get%s() == true;\n}\n\n", col.getColumnName()));
                 continue;
 
             }
             buildCSVClass.write(String.format("public static Predicate<%s> %sIsEqualTo(%s %s)\n{\n", csvClassName, col.getColumnName(), col.getColumnDataType(), col.getColumnName().toLowerCase()));
-            buildCSVClass.write(String.format("return p -> p.get%s() == %s;\n}\n", col.getColumnName(), col.getColumnName().toLowerCase()));
+            buildCSVClass.write(String.format("return p -> p.get%s() == %s;\n}\n\n", col.getColumnName(), col.getColumnName().toLowerCase()));
 
             buildCSVClass.write(String.format("public static Predicate<%s> %sIsLessThanOrEqualTo(%s %s)\n{\n", csvClassName, col.getColumnName(), col.getColumnDataType(), col.getColumnName().toLowerCase()));
-            buildCSVClass.write(String.format("return p -> p.get%s() <= %s;\n}\n", col.getColumnName(), col.getColumnName().toLowerCase()));
+            buildCSVClass.write(String.format("return p -> p.get%s() <= %s;\n}\n\n", col.getColumnName(), col.getColumnName().toLowerCase()));
 
             buildCSVClass.write(String.format("public static Predicate<%s> %sIsGreaterThanOrEqualTo(%s %s)\n{\n", csvClassName, col.getColumnName(), col.getColumnDataType(), col.getColumnName().toLowerCase()));
-            buildCSVClass.write(String.format("return p -> p.get%s() >= %s;\n}\n", col.getColumnName(), col.getColumnName().toLowerCase()));
+            buildCSVClass.write(String.format("return p -> p.get%s() >= %s;\n}\n\n", col.getColumnName(), col.getColumnName().toLowerCase()));
 
         }
 
@@ -878,7 +878,7 @@ public class AutoReadCSV implements ReadCSV {
             buildCSVClass.write("Map<Object, Boolean> seen = new ConcurrentHashMap<>();\n");
             buildCSVClass.write(String.format("return t -> seen.putIfAbsent(t.get%s(), Boolean.TRUE) == null;", col.getColumnName()));
 
-            buildCSVClass.write("}\n");
+            buildCSVClass.write("}\n\n");
         }
 
         //dropbyrow (all)
@@ -898,7 +898,7 @@ public class AutoReadCSV implements ReadCSV {
             plusIndex++;
         }
         buildCSVClass.write(", Boolean.TRUE) == null;");
-        buildCSVClass.write("}\n");
+        buildCSVClass.write("}\n\n");
 
         //add comparables ascending
         for (ColumnCSV col : columns)
@@ -909,25 +909,25 @@ public class AutoReadCSV implements ReadCSV {
 
             if(col.getColumnDataType().equals("String"))
             {
-                buildCSVClass.write(String.format("return o1.get%s().compareToIgnoreCase(o2.get%s());\n}\n}\n", col.getColumnName(), col.getColumnName()));
+                buildCSVClass.write(String.format("return o1.get%s().compareToIgnoreCase(o2.get%s());\n}\n}\n\n", col.getColumnName(), col.getColumnName()));
                 continue;
             }
 
             else if(col.getColumnDataType().equals("Boolean"))
             {
-                buildCSVClass.write(String.format("return Boolean.compare(o1.get%s(),o2.get%s());}\n}\n", col.getColumnName(), col.getColumnName()));
+                buildCSVClass.write(String.format("return Boolean.compare(o1.get%s(),o2.get%s());}\n}\n\n", col.getColumnName(), col.getColumnName()));
                 continue;
             }
             else if(col.getColumnDataType().equals("LocalDate") || col.getColumnDataType().equals("LocalDateTime"))
             {
-                buildCSVClass.write(String.format("return -o1.get%s().compareTo(o2.get%s());}\n}\n", col.getColumnName(), col.getColumnName()));
+                buildCSVClass.write(String.format("return -o1.get%s().compareTo(o2.get%s());}\n}\n\n", col.getColumnName(), col.getColumnName()));
                 continue;
             }
            buildCSVClass.write(String.format("if(o1.get%s() < o2.get%s()){\n", col.getColumnName(), col.getColumnName()));
 
            buildCSVClass.write("return -1;\n}\n");
 
-           buildCSVClass.write("else\n{\nreturn 1;\n}\n}\n}\n");
+           buildCSVClass.write("else\n{\nreturn 1;\n}\n}\n}\n\n");
 
         }
 
@@ -940,17 +940,17 @@ public class AutoReadCSV implements ReadCSV {
 
             if(col.getColumnDataType().equals("String"))
             {
-                buildCSVClass.write(String.format("return o1.get%s().compareToIgnoreCase(o2.get%s());\n}\n}\n", col.getColumnName(), col.getColumnName()));
+                buildCSVClass.write(String.format("return o1.get%s().compareToIgnoreCase(o2.get%s());\n}\n}\n\n", col.getColumnName(), col.getColumnName()));
                 continue;
             }
             else if(col.getColumnDataType().equals("Boolean"))
             {
-                buildCSVClass.write(String.format("return -Boolean.compare(o1.get%s(),o2.get%s());}\n}\n", col.getColumnName(), col.getColumnName()));
+                buildCSVClass.write(String.format("return -Boolean.compare(o1.get%s(),o2.get%s());}\n}\n\n", col.getColumnName(), col.getColumnName()));
                 continue;
             }
             else if(col.getColumnDataType().equals("LocalDate") || col.getColumnDataType().equals("LocalDateTime"))
             {
-                buildCSVClass.write(String.format("return o1.get%s().compareTo(o2.get%s());}\n}\n", col.getColumnName(), col.getColumnName()));
+                buildCSVClass.write(String.format("return o1.get%s().compareTo(o2.get%s());}\n}\n\n", col.getColumnName(), col.getColumnName()));
                 continue;
             }
             buildCSVClass.write(String.format("if(o1.get%s() < o2.get%s()){\n", col.getColumnName(), col.getColumnName()));
@@ -960,7 +960,7 @@ public class AutoReadCSV implements ReadCSV {
             buildCSVClass.write(String.format("else if(o1.get%s() > o2.get%s()){\n", col.getColumnName(), col.getColumnName()));
 
             buildCSVClass.write("return -1;\n}\n");
-            buildCSVClass.write("else\n{\nreturn 0;\n}\n}\n}\n");
+            buildCSVClass.write("else\n{\nreturn 0;\n}\n}\n}\n\n");
 
         }
 
