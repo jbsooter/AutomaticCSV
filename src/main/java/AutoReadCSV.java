@@ -893,7 +893,7 @@ public class AutoReadCSV implements ReadCSV {
 
             }
             buildCSVClass.write(String.format("public static Predicate<%s> %sIsEqualTo(%s %s)\n{\n", csvClassName, col.getColumnName(), col.getColumnDataType(), col.getColumnName().toLowerCase()));
-            buildCSVClass.write(String.format("return p -> p.get%s() == %s;\n}\n\n", col.getColumnName(), col.getColumnName().toLowerCase()));
+            buildCSVClass.write(String.format("return p -> p.get%s().equals(%s);\n}\n\n", col.getColumnName(), col.getColumnName().toLowerCase()));
 
             buildCSVClass.write(String.format("public static Predicate<%s> %sIsLessThanOrEqualTo(%s %s)\n{\n", csvClassName, col.getColumnName(), col.getColumnDataType(), col.getColumnName().toLowerCase()));
             buildCSVClass.write(String.format("return p -> p.get%s() <= %s;\n}\n\n", col.getColumnName(), col.getColumnName().toLowerCase()));
