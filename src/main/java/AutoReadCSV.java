@@ -340,7 +340,26 @@ public class AutoReadCSV implements ReadCSV {
                     }
                     else if(csvFields[i].equals(LocalDateTime.class))
                     {
-                        parsedRow[i] = LocalDateTime.parse(cleanCell);
+                        try
+                        {
+                            parsedRow[i] = LocalDateTime.parse(cleanCell);
+                        }catch(DateTimeParseException ex)
+                        {
+                            try {
+
+                                parsedRow[i] = LocalDateTime.parse(cleanCell, DateTimeFormatter.ofPattern("M/d/y H:m"));
+                            }catch(DateTimeParseException ex2)
+                            {
+                                try
+                                {
+                                    parsedRow[i] = LocalDateTime.parse(cleanCell,DateTimeFormatter.ofPattern("M/d/y H:m:s"));
+                                }catch(DateTimeParseException ex3)
+                                {
+
+                                }
+                            }
+                            }
+
                     }
                     else if(csvFields[i].equals(Boolean.class))
                     {
@@ -580,7 +599,20 @@ public class AutoReadCSV implements ReadCSV {
                     continue;
                 }catch(DateTimeParseException ex)
                 {
+                    try
+                    {
+                        LocalDateTime.parse(cell,DateTimeFormatter.ofPattern("M/d/y H:m"));
+                        continue;
+                    }catch(DateTimeParseException ex2)
+                    {
+                        try
+                        {
+                            LocalDateTime.parse(cell,DateTimeFormatter.ofPattern("M/d/y H:m:s"));
+                        }catch(DateTimeParseException ex3)
+                        {
 
+                        }
+                    }
                 }
             }
 
@@ -604,57 +636,57 @@ public class AutoReadCSV implements ReadCSV {
                     {
                         LocalDateTime.parse(cell);
                         cellBestClass = LocalDateTime.class;
-                    }catch(DateTimeParseException exDt)
-                    {
-                        try
-                        {
-                            LocalDate.parse(cell);
-                            cellBestClass = LocalDate.class;
-                            dtStringFormat = "yyyy-M-d";
-                        }catch(DateTimeParseException exD)
-                        {
+                    }catch(DateTimeParseException exDt) {
+                        try {
+                            LocalDateTime.parse(cell,DateTimeFormatter.ofPattern("M/d/y H:m"));
+                            cellBestClass = LocalDateTime.class;
+                            dtStringFormat = "M/d/y H:m";
+                        } catch (DateTimeParseException ex3) {
                             try
                             {
-                                LocalDate.parse(cell, DateTimeFormatter.ofPattern("M/d/yyyy"));
-                                cellBestClass = LocalDate.class;
-                                dtStringFormat = "M/d/yyyy";
-                            }catch(DateTimeParseException exD2)
-                            {
-                                try
-                                {
-                                    LocalDate.parse(cell, DateTimeFormatter.ofPattern("M/d/yy"));
+                                LocalDateTime.parse(cell,DateTimeFormatter.ofPattern("M/d/y H:m:s"));
+                                cellBestClass = LocalDateTime.class;
+                                dtStringFormat = "M/d/y H:m:s";
+                            }catch(DateTimeParseException ex4) {
+                                try {
+                                    LocalDate.parse(cell);
                                     cellBestClass = LocalDate.class;
-                                    dtStringFormat = "M/d/yy";
-                                }catch(DateTimeParseException exD3)
-                                {
-                                    try
-                                    {
-                                        LocalDate.parse(cell, DateTimeFormatter.ofPattern("M-d-yyyy"));
+                                    dtStringFormat = "yyyy-M-d";
+                                } catch (DateTimeParseException exD) {
+                                    try {
+                                        LocalDate.parse(cell, DateTimeFormatter.ofPattern("M/d/yyyy"));
                                         cellBestClass = LocalDate.class;
-                                        dtStringFormat = "M-d-yyyy";
-                                    }catch(DateTimeParseException exD4)
-                                    {
-                                        try
-                                        {
-                                            LocalDate.parse(cell, DateTimeFormatter.ofPattern("M-dd-yy"));
+                                        dtStringFormat = "M/d/yyyy";
+                                    } catch (DateTimeParseException exD2) {
+                                        try {
+                                            LocalDate.parse(cell, DateTimeFormatter.ofPattern("M/d/yy"));
                                             cellBestClass = LocalDate.class;
-                                            dtStringFormat = "M-dd-yy";
-                                        }catch(DateTimeException exD5)
-                                        {
-                                            try
-                                            {
-                                                LocalDate.parse(cell, DateTimeFormatter.ofPattern("yyyy/M/d"));
+                                            dtStringFormat = "M/d/yy";
+                                        } catch (DateTimeParseException exD3) {
+                                            try {
+                                                LocalDate.parse(cell, DateTimeFormatter.ofPattern("M-d-yyyy"));
                                                 cellBestClass = LocalDate.class;
-                                                dtStringFormat = "yyyy/M/d";
-                                            }catch(DateTimeException exD6)
-                                            {
-                                                cellBestClass = String.class;
+                                                dtStringFormat = "M-d-yyyy";
+                                            } catch (DateTimeParseException exD4) {
+                                                try {
+                                                    LocalDate.parse(cell, DateTimeFormatter.ofPattern("M-dd-yy"));
+                                                    cellBestClass = LocalDate.class;
+                                                    dtStringFormat = "M-dd-yy";
+                                                } catch (DateTimeException exD5) {
+                                                    try {
+                                                        LocalDate.parse(cell, DateTimeFormatter.ofPattern("yyyy/M/d"));
+                                                        cellBestClass = LocalDate.class;
+                                                        dtStringFormat = "yyyy/M/d";
+                                                    } catch (DateTimeException exD6) {
+                                                        cellBestClass = String.class;
+                                                    }
+                                                }
                                             }
                                         }
                                     }
+
                                 }
                             }
-
                         }
                     }
                 }
