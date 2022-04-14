@@ -955,11 +955,14 @@ public class AutoReadCSV implements ReadCSV {
                 buildCSVClass.write(String.format("return o1.get%s().compareTo(o2.get%s());}\n}\n\n", col.getColumnName(), col.getColumnName()));
                 continue;
             }
-           buildCSVClass.write(String.format("if(o1.get%s() < o2.get%s()){\n", col.getColumnName(), col.getColumnName()));
+            buildCSVClass.write(String.format("if(o1.get%s() > o2.get%s()){\n", col.getColumnName(), col.getColumnName()));
 
-           buildCSVClass.write("return -1;\n}\n");
+            buildCSVClass.write("return 1;\n}\n");
 
-           buildCSVClass.write("else\n{\nreturn 1;\n}\n}\n}\n\n");
+            buildCSVClass.write(String.format("else if(o1.get%s() < o2.get%s()){\n", col.getColumnName(), col.getColumnName()));
+
+            buildCSVClass.write("return -1;\n}\n");
+            buildCSVClass.write("else\n{\nreturn 0;\n}\n}\n}\n\n");
 
         }
 
