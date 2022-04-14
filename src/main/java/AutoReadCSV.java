@@ -6,7 +6,6 @@ import java.io.*;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.time.DateTimeException;
 import java.time.LocalDate;
@@ -93,7 +92,10 @@ public class AutoReadCSV implements ReadCSV {
      */
     private URL csvFileURL;
 
-
+    /**
+     * Determine field types based on first 100 rows of csv. Best for large, well formatted files.
+     */
+    private Boolean heuristicTyping;
     /**
      * Default Constructor
      */
@@ -116,6 +118,7 @@ public class AutoReadCSV implements ReadCSV {
         this.buildDirFileObject = new File("build/classes/java/main/");
         this.srcDirPath = "src/main/java/";
         this.srcDirFileObject = new File("src/main/java/");
+        this.heuristicTyping = false;
     }
 
     /**
@@ -132,6 +135,7 @@ public class AutoReadCSV implements ReadCSV {
         this.buildDirFileObject = new File("build/classes/java/main/");
         this.srcDirPath = "src/main/java/";
         this.srcDirFileObject = new File("src/main/java");
+        this.heuristicTyping = false;
     }
 
     /**
@@ -149,6 +153,7 @@ public class AutoReadCSV implements ReadCSV {
         this.srcDirFileObject = new File("src/main/java");
         this.csvFileURL = csvFileURL;
         this.csvClassName = createClassName(preferredFileName);
+        this.heuristicTyping = false;
     }
 
     /**
@@ -452,9 +457,19 @@ public class AutoReadCSV implements ReadCSV {
         //store String[] representation of rows in file
         ArrayList<String[]> rawRowArrays = new ArrayList<>();
 
+        int heuristicCount = 0;
         //get String[] representation of ALL rows in file
         while (fileScnr.hasNextLine()) {
+            if(heuristicTyping)
+            {
+                if(heuristicCount > 100)
+                {
+                    break;
+                }
+            }
+
             rawRowArrays.add(fileScnr.nextLine().split(delimeter + "(?=([^\"]*\"[^\"]*\")*[^\"]*$)", -1));
+            heuristicCount++;
         }
 
         //Scanner for HEADERROW String (Not file)
@@ -1183,6 +1198,14 @@ public class AutoReadCSV implements ReadCSV {
     public void setBuildDirFileObject(File buildDirFileObject) {
         this.buildDirFileObject = buildDirFileObject;
         this.buildDirPath = buildDirFileObject.getPath();
+    }
+
+    public Boolean getHeuristicTyping() {
+        return heuristicTyping;
+    }
+
+    public void setHeuristicTyping(Boolean heuristicTyping) {
+        this.heuristicTyping = heuristicTyping;
     }
 }
 
