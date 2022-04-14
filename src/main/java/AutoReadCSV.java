@@ -952,7 +952,7 @@ public class AutoReadCSV implements ReadCSV {
             }
             else if(col.getColumnDataType().equals("LocalDate") || col.getColumnDataType().equals("LocalDateTime"))
             {
-                buildCSVClass.write(String.format("return -o1.get%s().compareTo(o2.get%s());}\n}\n\n", col.getColumnName(), col.getColumnName()));
+                buildCSVClass.write(String.format("return o1.get%s().compareTo(o2.get%s());}\n}\n\n", col.getColumnName(), col.getColumnName()));
                 continue;
             }
            buildCSVClass.write(String.format("if(o1.get%s() < o2.get%s()){\n", col.getColumnName(), col.getColumnName()));
@@ -982,7 +982,7 @@ public class AutoReadCSV implements ReadCSV {
             }
             else if(col.getColumnDataType().equals("LocalDate") || col.getColumnDataType().equals("LocalDateTime"))
             {
-                buildCSVClass.write(String.format("return o1.get%s().compareTo(o2.get%s());}\n}\n\n", col.getColumnName(), col.getColumnName()));
+                buildCSVClass.write(String.format("return -o1.get%s().compareTo(o2.get%s());}\n}\n\n", col.getColumnName(), col.getColumnName()));
                 continue;
             }
             buildCSVClass.write(String.format("if(o1.get%s() < o2.get%s()){\n", col.getColumnName(), col.getColumnName()));
