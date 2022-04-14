@@ -975,7 +975,7 @@ public class AutoReadCSV implements ReadCSV {
 
             if(col.getColumnDataType().equals("String"))
             {
-                buildCSVClass.write(String.format("return o1.get%s().compareToIgnoreCase(o2.get%s());\n}\n}\n\n", col.getColumnName(), col.getColumnName()));
+                buildCSVClass.write(String.format("return -o1.get%s().compareToIgnoreCase(o2.get%s());\n}\n}\n\n", col.getColumnName(), col.getColumnName()));
                 continue;
             }
             else if(col.getColumnDataType().equals("Boolean"))
