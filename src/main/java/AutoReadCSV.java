@@ -67,25 +67,11 @@ public class AutoReadCSV implements ReadCSV {
     private String srcDirPath;
 
     /**
-     * Path to the java source directory of your project. Default is the standard Gradle file structure,
-     * "src/main/java/"
-     * Can be modified using the appropriate setter.
-     */
-    private File srcDirFileObject;
-
-    /**
      * Path to the java build directory of your project. Default is the standard Gradle file structure.
      * "build/classes/java/main/"
      * Can be modified using the appropriate setter.
      */
     private String buildDirPath;
-
-    /**
-     * Path to the java build directory of your project. Default is the standard Gradle file structure.
-     * "build/classes/java/main/"
-     * Can be modified using the appropriate setter.
-     */
-    private File buildDirFileObject;
 
     /**
      * URL object pointing to the online location of a CSV file.
@@ -115,9 +101,7 @@ public class AutoReadCSV implements ReadCSV {
         this.csvClassName = createClassName(csvFilePath);
         this.delimeter = ",";
         this.buildDirPath = "build/classes/java/main/";
-        this.buildDirFileObject = new File("build/classes/java/main/");
         this.srcDirPath = "src/main/java/";
-        this.srcDirFileObject = new File("src/main/java/");
         this.heuristicTyping = false;
     }
 
@@ -132,9 +116,7 @@ public class AutoReadCSV implements ReadCSV {
         this.csvClassName = createClassName(csvFilePath);
         this.delimeter = ",";
         this.buildDirPath = "build/classes/java/main/";
-        this.buildDirFileObject = new File("build/classes/java/main/");
         this.srcDirPath = "src/main/java/";
-        this.srcDirFileObject = new File("src/main/java");
         this.heuristicTyping = false;
     }
 
@@ -148,9 +130,7 @@ public class AutoReadCSV implements ReadCSV {
     {
         this.delimeter = ",";
         this.buildDirPath = "build/classes/java/main/";
-        this.buildDirFileObject = new File("build/classes/java/main/");
         this.srcDirPath = "src/main/java/";
-        this.srcDirFileObject = new File("src/main/java");
         this.csvFileURL = csvFileURL;
         this.csvClassName = createClassName(preferredFileName);
         this.heuristicTyping = false;
@@ -1159,26 +1139,12 @@ public class AutoReadCSV implements ReadCSV {
     public String getSrcDirPath() {
         return srcDirPath;
     }
-
-    /**
-     * Slighly different than "boilerplate" setter; synchronizes srcDirPath and SrcDirFileObject
-     * @param srcDirPath
-     */
+    
     public void setSrcDirPath(String srcDirPath) {
         this.srcDirPath = srcDirPath;
-        this.srcDirFileObject = new File(srcDirPath);
     }
 
-    public File getSrcDirFileObject() {
-        return srcDirFileObject;
-    }
-
-    /**
-     * Slighly different than "boilerplate" setter; synchronizes srcDirPath and SrcDirFileObject
-     * @param srcDirFileObject
-     */
     public void setSrcDirFileObject(File srcDirFileObject) {
-        this.srcDirFileObject = srcDirFileObject;
         this.srcDirPath = srcDirFileObject.getPath();
     }
 
@@ -1188,17 +1154,8 @@ public class AutoReadCSV implements ReadCSV {
 
     public void setBuildDirPath(String buildDirPath) {
         this.buildDirPath = buildDirPath;
-        this.buildDirFileObject = new File(buildDirPath);
     }
 
-    public File getBuildDirFileObject() {
-        return buildDirFileObject;
-    }
-
-    public void setBuildDirFileObject(File buildDirFileObject) {
-        this.buildDirFileObject = buildDirFileObject;
-        this.buildDirPath = buildDirFileObject.getPath();
-    }
 
     public Boolean getHeuristicTyping() {
         return heuristicTyping;
