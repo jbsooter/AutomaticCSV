@@ -1139,7 +1139,7 @@ public class AutoReadCSV implements ReadCSV {
     public String getSrcDirPath() {
         return srcDirPath;
     }
-    
+
     public void setSrcDirPath(String srcDirPath) {
         this.srcDirPath = srcDirPath;
     }
@@ -1163,6 +1163,16 @@ public class AutoReadCSV implements ReadCSV {
 
     public void setHeuristicTyping(Boolean heuristicTyping) {
         this.heuristicTyping = heuristicTyping;
+    }
+
+    /**
+     * read in a CSV of a different file name with the same column headers and datatypes without generating an additional class.
+     * Ex reportA.csv and ReportB.csv have the same columns/datatypes, but you only want to have one class file.
+     * @param CsvClassName String representation of class file to use. 
+     */
+    public void useCsvClassOfName(String CsvClassName)
+    {
+        this.csvClassName = CsvClassName;
     }
 }
 
