@@ -1,16 +1,11 @@
-# AutomaticCSV
-
-#### An open source library to automatically generate ArrayLists of Plain Old Java Objects for importing, sorting, and filtering data. 
-
 ### Features
 
 - Import CSV files as ArrayLists of Java objects, with support for the Integer, Double, Boolean, String, LocalDate, and LocalDateTime datatypes. 
 - Autogenerate Comparators and Predicates for sorting and filtering your data via the Stream API. 
 - Pretty Print ArrayLists in tabular format. 
 - Write manipulated data out to CSV. 
-
-
 - Support for hosted CSVs
+
 ### Getting Started 
 
 
@@ -18,7 +13,7 @@
 
   ```Java
   //Gradle
-  implementation 'io.github.jbsooter:AutomaticCSV:0.1.3'
+  implementation 'io.github.jbsooter:AutomaticCSV:0.1.4'
   ```
   
 2. Create a new AutoReadCSV object and read in your file as an ArrayList of the top-level **Object** class. 
