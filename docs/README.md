@@ -1,3 +1,6 @@
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.jbsooter/AutomaticCSV.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22io.github.jbsooter%22%20AND%20a:%22AutomaticCSV%22)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 ### Features
 
 - Import CSV files as ArrayLists of Java objects, with support for the Integer, Double, Boolean, String, LocalDate, and LocalDateTime datatypes. 
