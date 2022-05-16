@@ -6,7 +6,6 @@ import java.io.*;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.time.DateTimeException;
 import java.time.LocalDate;
@@ -68,13 +67,6 @@ public class AutoReadCSV implements ReadCSV {
     private String srcDirPath;
 
     /**
-     * Path to the java source directory of your project. Default is the standard Gradle file structure,
-     * "src/main/java/"
-     * Can be modified using the appropriate setter.
-     */
-    private File srcDirFileObject;
-
-    /**
      * Path to the java build directory of your project. Default is the standard Gradle file structure.
      * "build/classes/java/main/"
      * Can be modified using the appropriate setter.
@@ -82,18 +74,14 @@ public class AutoReadCSV implements ReadCSV {
     private String buildDirPath;
 
     /**
-     * Path to the java build directory of your project. Default is the standard Gradle file structure.
-     * "build/classes/java/main/"
-     * Can be modified using the appropriate setter.
-     */
-    private File buildDirFileObject;
-
-    /**
      * URL object pointing to the online location of a CSV file.
      */
     private URL csvFileURL;
 
-
+    /**
+     * Determine field types based on first 100 rows of csv. Best for large, well formatted files.
+     */
+    private Boolean heuristicTyping;
     /**
      * Default Constructor
      */
@@ -113,9 +101,8 @@ public class AutoReadCSV implements ReadCSV {
         this.csvClassName = createClassName(csvFilePath);
         this.delimeter = ",";
         this.buildDirPath = "build/classes/java/main/";
-        this.buildDirFileObject = new File("build/classes/java/main/");
         this.srcDirPath = "src/main/java/";
-        this.srcDirFileObject = new File("src/main/java/");
+        this.heuristicTyping = false;
     }
 
     /**
@@ -129,9 +116,8 @@ public class AutoReadCSV implements ReadCSV {
         this.csvClassName = createClassName(csvFilePath);
         this.delimeter = ",";
         this.buildDirPath = "build/classes/java/main/";
-        this.buildDirFileObject = new File("build/classes/java/main/");
         this.srcDirPath = "src/main/java/";
-        this.srcDirFileObject = new File("src/main/java");
+        this.heuristicTyping = false;
     }
 
     /**
@@ -144,11 +130,10 @@ public class AutoReadCSV implements ReadCSV {
     {
         this.delimeter = ",";
         this.buildDirPath = "build/classes/java/main/";
-        this.buildDirFileObject = new File("build/classes/java/main/");
         this.srcDirPath = "src/main/java/";
-        this.srcDirFileObject = new File("src/main/java");
         this.csvFileURL = csvFileURL;
         this.csvClassName = createClassName(preferredFileName);
+        this.heuristicTyping = false;
     }
 
     /**
@@ -315,8 +300,6 @@ public class AutoReadCSV implements ReadCSV {
                 }
             }
 
-            Map<Integer, String> LocalDateTypeIndicator = new HashMap<>();
-            Map<Integer, String> BooleanTypeIndicator = new HashMap<>();
             while(fileScnr.hasNextLine())
             {
                 String[] row = fileScnr.nextLine().split(delimeter + "(?=([^\"]*\"[^\"]*\")*[^\"]*$)", -1); //-1 protects against ,,
@@ -327,38 +310,6 @@ public class AutoReadCSV implements ReadCSV {
 
                 {
                     String cleanCell = cleanCell(row[i]);
-                        if(LocalDateTypeIndicator.containsKey(i))
-                        {
-                            try
-                            {
-                                LocalDate.parse(cleanCell, DateTimeFormatter.ofPattern(LocalDateTypeIndicator.get(i)));
-                                break;
-                            }catch(DateTimeParseException ex)
-                            {
-                                continue;
-                            }
-                        }
-
-                    if(BooleanTypeIndicator.containsKey(i))
-                    {
-
-                            if(cleanCell.equalsIgnoreCase("yes") || cleanCell.equalsIgnoreCase("true") || checkIntTrue(cleanCell)) //checkint true to take care of integer bool
-                            {
-                                parsedRow[i] = true;
-                                break;
-                            }
-                            else if(cleanCell.equalsIgnoreCase("no") || cleanCell.equalsIgnoreCase("false") || checkIntFalse(cleanCell))
-                            {
-                                parsedRow[i] = true;
-                                break;
-                            }
-                            else
-                            {
-                                continue;
-
-                            }
-
-                    }
 
                     if(csvFields[i].equals(Double.class))
                     {
@@ -374,7 +325,26 @@ public class AutoReadCSV implements ReadCSV {
                     }
                     else if(csvFields[i].equals(LocalDateTime.class))
                     {
-                        parsedRow[i] = LocalDateTime.parse(cleanCell);
+                        try
+                        {
+                            parsedRow[i] = LocalDateTime.parse(cleanCell);
+                        }catch(DateTimeParseException ex)
+                        {
+                            try {
+
+                                parsedRow[i] = LocalDateTime.parse(cleanCell, DateTimeFormatter.ofPattern("M/d/y H:m"));
+                            }catch(DateTimeParseException ex2)
+                            {
+                                try
+                                {
+                                    parsedRow[i] = LocalDateTime.parse(cleanCell,DateTimeFormatter.ofPattern("M/d/y H:m:s"));
+                                }catch(DateTimeParseException ex3)
+                                {
+
+                                }
+                            }
+                            }
+
                     }
                     else if(csvFields[i].equals(Boolean.class))
                     {
@@ -396,23 +366,18 @@ public class AutoReadCSV implements ReadCSV {
                         }catch(DateTimeParseException exDt) {
                             try {
                                 parsedRow[i] = LocalDate.parse(cleanCell, DateTimeFormatter.ofPattern("M/d/yyyy"));
-                                LocalDateTypeIndicator.put(i, "M/d/yyyy");
                             } catch (DateTimeParseException exDt2) {
                                 try {
                                     parsedRow[i] = LocalDate.parse(cleanCell, DateTimeFormatter.ofPattern("M/d/yy"));
-                                    LocalDateTypeIndicator.put(i, "M/d/yy");
                                 } catch (DateTimeParseException exDt3) {
                                     try {
                                         parsedRow[i] = LocalDate.parse(cleanCell, DateTimeFormatter.ofPattern("M-d-yyyy"));
-                                        LocalDateTypeIndicator.put(i, "M-d-yyyy");
                                     } catch (DateTimeParseException exDt4) {
                                         try {
                                             parsedRow[i] = LocalDate.parse(cleanCell, DateTimeFormatter.ofPattern("M-d-yy"));
-                                            LocalDateTypeIndicator.put(i, "M-d-yy");
                                         } catch (DateTimeParseException exDt5) {
                                             try {
                                                 parsedRow[i] = LocalDate.parse(cleanCell, DateTimeFormatter.ofPattern("yyyy/M/d"));
-                                                LocalDateTypeIndicator.put(i, "yyyy/M/d");
                                             } catch (DateTimeParseException exDt6) {
                                                 //should never be reached due to column building steps
                                             }
@@ -472,9 +437,19 @@ public class AutoReadCSV implements ReadCSV {
         //store String[] representation of rows in file
         ArrayList<String[]> rawRowArrays = new ArrayList<>();
 
+        int heuristicCount = 0;
         //get String[] representation of ALL rows in file
         while (fileScnr.hasNextLine()) {
+            if(heuristicTyping)
+            {
+                if(heuristicCount > 100)
+                {
+                    break;
+                }
+            }
+
             rawRowArrays.add(fileScnr.nextLine().split(delimeter + "(?=([^\"]*\"[^\"]*\")*[^\"]*$)", -1));
+            heuristicCount++;
         }
 
         //Scanner for HEADERROW String (Not file)
@@ -619,7 +594,20 @@ public class AutoReadCSV implements ReadCSV {
                     continue;
                 }catch(DateTimeParseException ex)
                 {
+                    try
+                    {
+                        LocalDateTime.parse(cell,DateTimeFormatter.ofPattern("M/d/y H:m"));
+                        continue;
+                    }catch(DateTimeParseException ex2)
+                    {
+                        try
+                        {
+                            LocalDateTime.parse(cell,DateTimeFormatter.ofPattern("M/d/y H:m:s"));
+                        }catch(DateTimeParseException ex3)
+                        {
 
+                        }
+                    }
                 }
             }
 
@@ -643,57 +631,57 @@ public class AutoReadCSV implements ReadCSV {
                     {
                         LocalDateTime.parse(cell);
                         cellBestClass = LocalDateTime.class;
-                    }catch(DateTimeParseException exDt)
-                    {
-                        try
-                        {
-                            LocalDate.parse(cell);
-                            cellBestClass = LocalDate.class;
-                            dtStringFormat = "yyyy-M-d";
-                        }catch(DateTimeParseException exD)
-                        {
+                    }catch(DateTimeParseException exDt) {
+                        try {
+                            LocalDateTime.parse(cell,DateTimeFormatter.ofPattern("M/d/y H:m"));
+                            cellBestClass = LocalDateTime.class;
+                            dtStringFormat = "M/d/y H:m";
+                        } catch (DateTimeParseException ex3) {
                             try
                             {
-                                LocalDate.parse(cell, DateTimeFormatter.ofPattern("M/d/yyyy"));
-                                cellBestClass = LocalDate.class;
-                                dtStringFormat = "M/d/yyyy";
-                            }catch(DateTimeParseException exD2)
-                            {
-                                try
-                                {
-                                    LocalDate.parse(cell, DateTimeFormatter.ofPattern("M/d/yy"));
+                                LocalDateTime.parse(cell,DateTimeFormatter.ofPattern("M/d/y H:m:s"));
+                                cellBestClass = LocalDateTime.class;
+                                dtStringFormat = "M/d/y H:m:s";
+                            }catch(DateTimeParseException ex4) {
+                                try {
+                                    LocalDate.parse(cell);
                                     cellBestClass = LocalDate.class;
-                                    dtStringFormat = "M/d/yy";
-                                }catch(DateTimeParseException exD3)
-                                {
-                                    try
-                                    {
-                                        LocalDate.parse(cell, DateTimeFormatter.ofPattern("M-d-yyyy"));
+                                    dtStringFormat = "yyyy-M-d";
+                                } catch (DateTimeParseException exD) {
+                                    try {
+                                        LocalDate.parse(cell, DateTimeFormatter.ofPattern("M/d/yyyy"));
                                         cellBestClass = LocalDate.class;
-                                        dtStringFormat = "M-d-yyyy";
-                                    }catch(DateTimeParseException exD4)
-                                    {
-                                        try
-                                        {
-                                            LocalDate.parse(cell, DateTimeFormatter.ofPattern("M-dd-yy"));
+                                        dtStringFormat = "M/d/yyyy";
+                                    } catch (DateTimeParseException exD2) {
+                                        try {
+                                            LocalDate.parse(cell, DateTimeFormatter.ofPattern("M/d/yy"));
                                             cellBestClass = LocalDate.class;
-                                            dtStringFormat = "M-dd-yy";
-                                        }catch(DateTimeException exD5)
-                                        {
-                                            try
-                                            {
-                                                LocalDate.parse(cell, DateTimeFormatter.ofPattern("yyyy/M/d"));
+                                            dtStringFormat = "M/d/yy";
+                                        } catch (DateTimeParseException exD3) {
+                                            try {
+                                                LocalDate.parse(cell, DateTimeFormatter.ofPattern("M-d-yyyy"));
                                                 cellBestClass = LocalDate.class;
-                                                dtStringFormat = "yyyy/M/d";
-                                            }catch(DateTimeException exD6)
-                                            {
-                                                cellBestClass = String.class;
+                                                dtStringFormat = "M-d-yyyy";
+                                            } catch (DateTimeParseException exD4) {
+                                                try {
+                                                    LocalDate.parse(cell, DateTimeFormatter.ofPattern("M-dd-yy"));
+                                                    cellBestClass = LocalDate.class;
+                                                    dtStringFormat = "M-dd-yy";
+                                                } catch (DateTimeException exD5) {
+                                                    try {
+                                                        LocalDate.parse(cell, DateTimeFormatter.ofPattern("yyyy/M/d"));
+                                                        cellBestClass = LocalDate.class;
+                                                        dtStringFormat = "yyyy/M/d";
+                                                    } catch (DateTimeException exD6) {
+                                                        cellBestClass = String.class;
+                                                    }
+                                                }
                                             }
                                         }
                                     }
+
                                 }
                             }
-
                         }
                     }
                 }
@@ -816,6 +804,14 @@ public class AutoReadCSV implements ReadCSV {
             buildCSVClass.write("import java.time.LocalDate;\n\n");
         }
 
+        //import comparator
+        buildCSVClass.write("import java.util.Comparator;\n");
+        //import Predicate
+        buildCSVClass.write("import java.util.function.Predicate;\n");
+        //import hashmap
+        buildCSVClass.write("import java.util.Map;\n");
+        buildCSVClass.write("import java.util.concurrent.ConcurrentHashMap;\n\n");
+
         //Write Class Signature to File
         try {
             buildCSVClass.write(String.format("public class %s {\n", csvClassName));
@@ -868,9 +864,138 @@ public class AutoReadCSV implements ReadCSV {
             buildCSVClass.write(String.format("public void set%s(%s %s) {\nthis.%s = %s;\n}\n\n", col.getColumnName(), col.getColumnDataType(), col.getColumnName(), col.getColumnName(), col.getColumnName()));
         }
 
+        //add predicates
+        for(ColumnCSV col: columns)
+        {
+            if(col.getColumnDataType().equals("String"))
+            {
+                continue;
+            }
+            else if(col.getColumnDataType().equals("LocalDate") || col.getColumnDataType().equals("LocalDateTime"))
+            {
+                buildCSVClass.write(String.format("public static Predicate<%s> %sIsBefore(%s %s)\n{\n", csvClassName, col.getColumnName(), col.getColumnDataType(), col.getColumnName().toLowerCase()));
+                buildCSVClass.write(String.format("return x86198 -> x86198.get%s().isBefore(%s);\n}\n\n", col.getColumnName(), col.getColumnName().toLowerCase()));
+
+                buildCSVClass.write(String.format("public static Predicate<%s> %sIsAfter(%s %s)\n{\n", csvClassName, col.getColumnName(), col.getColumnDataType(), col.getColumnName().toLowerCase()));
+                buildCSVClass.write(String.format("return x86198 -> x86198.get%s().isAfter(%s);\n}\n\n", col.getColumnName(), col.getColumnName().toLowerCase()));
+                continue;
+            }
+            else if(col.getColumnDataType().equals("Boolean"))
+            {
+                buildCSVClass.write(String.format("public static Predicate<%s> %sIsEqualTo(%s %s)\n{\n", csvClassName, col.getColumnName(), col.getColumnDataType(), col.getColumnName().toLowerCase()));
+                buildCSVClass.write(String.format("return x86198 -> x86198.get%s() == %s;\n}\n\n", col.getColumnName(), col.getColumnName().toLowerCase()));
+                continue;
+
+            }
+            buildCSVClass.write(String.format("public static Predicate<%s> %sIsEqualTo(%s %s)\n{\n", csvClassName, col.getColumnName(), col.getColumnDataType(), col.getColumnName().toLowerCase()));
+            buildCSVClass.write(String.format("return x86198 -> x86198.get%s().equals(%s);\n}\n\n", col.getColumnName(), col.getColumnName().toLowerCase()));
+
+            buildCSVClass.write(String.format("public static Predicate<%s> %sIsLessThanOrEqualTo(%s %s)\n{\n", csvClassName, col.getColumnName(), col.getColumnDataType(), col.getColumnName().toLowerCase()));
+            buildCSVClass.write(String.format("return x86198 -> x86198.get%s() <= %s;\n}\n\n", col.getColumnName(), col.getColumnName().toLowerCase()));
+
+            buildCSVClass.write(String.format("public static Predicate<%s> %sIsGreaterThanOrEqualTo(%s %s)\n{\n", csvClassName, col.getColumnName(), col.getColumnDataType(), col.getColumnName().toLowerCase()));
+            buildCSVClass.write(String.format("return x86198 -> x86198.get%s() >= %s;\n}\n\n", col.getColumnName(), col.getColumnName().toLowerCase()));
+
+        }
+
+        //drop by key
+        for(ColumnCSV col: columns)
+        {
+            buildCSVClass.write(String.format("public static Predicate<%s> distinctBy%s()\n{\n", csvClassName, col.getColumnName()));
+            buildCSVClass.write("Map<Object, Boolean> seen = new ConcurrentHashMap<>();\n");
+            buildCSVClass.write(String.format("return x86198 -> seen.putIfAbsent(x86198.get%s(), Boolean.TRUE) == null;", col.getColumnName()));
+
+            buildCSVClass.write("}\n\n");
+        }
+
+        //dropbyrow (all)
+        buildCSVClass.write(String.format("public static Predicate<%s> distinctRecords()\n{\n", csvClassName));
+        buildCSVClass.write("Map<Object, Boolean> seen = new ConcurrentHashMap<>();\n");
+        buildCSVClass.write("return x86198 -> seen.putIfAbsent(");
+
+        int plusIndex = 0;
+        for(ColumnCSV col: columns)
+        {
+            buildCSVClass.write(String.format("x86198.get%s().toString()", col.getColumnName()));
+
+            if(plusIndex < columns.size() - 1)
+            {
+                buildCSVClass.write("+");
+            }
+            plusIndex++;
+        }
+        buildCSVClass.write(", Boolean.TRUE) == null;");
+        buildCSVClass.write("}\n\n");
+
+        //add comparables ascending
+        for (ColumnCSV col : columns)
+        {
+           buildCSVClass.write(String.format("static class SortAscendingBy%s implements Comparator<%s> {\n", col.getColumnName(), csvClassName));
+
+           buildCSVClass.write(String.format("public int compare(%s o1, %s o2) {\n", csvClassName, csvClassName));
+
+            if(col.getColumnDataType().equals("String"))
+            {
+                buildCSVClass.write(String.format("return o1.get%s().compareToIgnoreCase(o2.get%s());\n}\n}\n\n", col.getColumnName(), col.getColumnName()));
+                continue;
+            }
+
+            else if(col.getColumnDataType().equals("Boolean"))
+            {
+                buildCSVClass.write(String.format("return Boolean.compare(o1.get%s(),o2.get%s());}\n}\n\n", col.getColumnName(), col.getColumnName()));
+                continue;
+            }
+            else if(col.getColumnDataType().equals("LocalDate") || col.getColumnDataType().equals("LocalDateTime"))
+            {
+                buildCSVClass.write(String.format("return o1.get%s().compareTo(o2.get%s());}\n}\n\n", col.getColumnName(), col.getColumnName()));
+                continue;
+            }
+            buildCSVClass.write(String.format("if(o1.get%s() > o2.get%s()){\n", col.getColumnName(), col.getColumnName()));
+
+            buildCSVClass.write("return 1;\n}\n");
+
+            buildCSVClass.write(String.format("else if(o1.get%s() < o2.get%s()){\n", col.getColumnName(), col.getColumnName()));
+
+            buildCSVClass.write("return -1;\n}\n");
+            buildCSVClass.write("else\n{\nreturn 0;\n}\n}\n}\n\n");
+
+        }
+
+        //comparables descending
+        for (ColumnCSV col : columns)
+        {
+            buildCSVClass.write(String.format("static class SortDescendingBy%s implements Comparator<%s> {\n", col.getColumnName(), csvClassName));
+
+            buildCSVClass.write(String.format("public int compare(%s o1, %s o2) {\n", csvClassName, csvClassName));
+
+            if(col.getColumnDataType().equals("String"))
+            {
+                buildCSVClass.write(String.format("return -o1.get%s().compareToIgnoreCase(o2.get%s());\n}\n}\n\n", col.getColumnName(), col.getColumnName()));
+                continue;
+            }
+            else if(col.getColumnDataType().equals("Boolean"))
+            {
+                buildCSVClass.write(String.format("return -Boolean.compare(o1.get%s(),o2.get%s());}\n}\n\n", col.getColumnName(), col.getColumnName()));
+                continue;
+            }
+            else if(col.getColumnDataType().equals("LocalDate") || col.getColumnDataType().equals("LocalDateTime"))
+            {
+                buildCSVClass.write(String.format("return -o1.get%s().compareTo(o2.get%s());}\n}\n\n", col.getColumnName(), col.getColumnName()));
+                continue;
+            }
+            buildCSVClass.write(String.format("if(o1.get%s() < o2.get%s()){\n", col.getColumnName(), col.getColumnName()));
+
+            buildCSVClass.write("return 1;\n}\n");
+
+            buildCSVClass.write(String.format("else if(o1.get%s() > o2.get%s()){\n", col.getColumnName(), col.getColumnName()));
+
+            buildCSVClass.write("return -1;\n}\n");
+            buildCSVClass.write("else\n{\nreturn 0;\n}\n}\n}\n\n");
+
+        }
+
         //write toString signature to File
         buildCSVClass.write("@Override()\npublic String toString() {\nreturn ");
-
         //Create toString String
         int j = 0;
         for (ColumnCSV col : columns) {
@@ -1015,25 +1140,11 @@ public class AutoReadCSV implements ReadCSV {
         return srcDirPath;
     }
 
-    /**
-     * Slighly different than "boilerplate" setter; synchronizes srcDirPath and SrcDirFileObject
-     * @param srcDirPath
-     */
     public void setSrcDirPath(String srcDirPath) {
         this.srcDirPath = srcDirPath;
-        this.srcDirFileObject = new File(srcDirPath);
     }
 
-    public File getSrcDirFileObject() {
-        return srcDirFileObject;
-    }
-
-    /**
-     * Slighly different than "boilerplate" setter; synchronizes srcDirPath and SrcDirFileObject
-     * @param srcDirFileObject
-     */
     public void setSrcDirFileObject(File srcDirFileObject) {
-        this.srcDirFileObject = srcDirFileObject;
         this.srcDirPath = srcDirFileObject.getPath();
     }
 
@@ -1043,16 +1154,25 @@ public class AutoReadCSV implements ReadCSV {
 
     public void setBuildDirPath(String buildDirPath) {
         this.buildDirPath = buildDirPath;
-        this.buildDirFileObject = new File(buildDirPath);
     }
 
-    public File getBuildDirFileObject() {
-        return buildDirFileObject;
+
+    public Boolean getHeuristicTyping() {
+        return heuristicTyping;
     }
 
-    public void setBuildDirFileObject(File buildDirFileObject) {
-        this.buildDirFileObject = buildDirFileObject;
-        this.buildDirPath = buildDirFileObject.getPath();
+    public void setHeuristicTyping(Boolean heuristicTyping) {
+        this.heuristicTyping = heuristicTyping;
+    }
+
+    /**
+     * read in a CSV of a different file name with the same column headers and datatypes without generating an additional class.
+     * Ex reportA.csv and ReportB.csv have the same columns/datatypes, but you only want to have one class file.
+     * @param CsvClassName String representation of class file to use. 
+     */
+    public void useCsvClassOfName(String CsvClassName)
+    {
+        this.csvClassName = CsvClassName;
     }
 }
 
