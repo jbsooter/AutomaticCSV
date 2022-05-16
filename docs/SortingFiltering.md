@@ -13,6 +13,8 @@ By default, these methods are housed within the AutomaticCSV class to prevent na
 
 **Single Level Sort Example**
 
+Example autompg CSV [here](https://github.com/jbsooter/AutomaticCSV/blob/d1d751817a53f35edf3db81523777f6cdb12b604/data/auto-mpg.csv)
+
 ```Java
   auto_data.sort(new Autompg.SortAscendingBympg());
 ```
