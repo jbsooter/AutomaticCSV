@@ -36,4 +36,4 @@ Parsed as **LocalDateTime** and **LocalDate** objects with any of the following 
 
 These dataypes were selected to support the vast majority of tabular data with as few datatypes as possible. 
 
-[]("TODO return to home")
+[Return to Home](README.md)
