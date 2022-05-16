@@ -1,96 +1,48 @@
 # AutomaticCSV
-#### :rocket: Lightweight Java Library to Automatically Parse any CSV File Into Java Objects 
+
+#### An open source library to automatically generate ArrayLists of Plain Old Java Objects for importing, sorting, and filtering data. 
+
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.jbsooter/AutomaticCSV.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22io.github.jbsooter%22%20AND%20a:%22AutomaticCSV%22)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Take advantage of the flexibility and power of the traditional Java object structure with the "one line" convenience of reading a CSV with Tablesaw or a scripting language. 
+[Full Documentation](https://jbsooter.github.io/AutomaticCSV/)
 
+### Features
 
-## Getting Started
+- Import CSV files as ArrayLists of Java objects, with support for the Integer, Double, Boolean, String, LocalDate, and LocalDateTime datatypes. 
+- Autogenerate Comparators and Predicates for sorting and filtering your data via the Stream API. 
+- Pretty Print ArrayLists in tabular format. 
+- Write manipulated data out to CSV. 
+- Support for hosted CSVs
+
+### Getting Started 
+
 
 1. Add the AutomaticCSV dependancy to your Gradle or Maven Project. ([Maven Central](https://mvnrepository.com/artifact/io.github.jbsooter/AutomaticCSV))
 
   ```Java
   //Gradle
-  implementation 'io.github.jbsooter:AutomaticCSV:0.1.3'
+  implementation 'io.github.jbsooter:AutomaticCSV:0.1.4'
   ```
   
-  ```Java
-  //Maven
-  <dependency>
-  <groupId>io.github.jbsooter</groupId>
-  <artifactId>AutomaticCSV</artifactId>
-  <version>0.1.3</version>
-</dependency>
-  ```
-
-2. Create a Java class file "AutomaticCSVDemo".
-        
- ```Java
- import java.util.ArrayList;
- 
- public class AutomaticCSVDemo  {
-      public static void main(String[] args)
-      {
-        //Add code here
-      }
- }
-
- ```
-        
-3. Create a new AutoReadCSV object initialized with the path of your CSV. 
+2. Create a new AutoReadCSV object and read in your file as an ArrayList of the top-level **Object** class. 
 
 ```Java
-AutoReadCSV rCSV = new AutoReadCSV("/path/to/csv");
-
-```
-4. Automatically create a Java class mapped to your CSV and read in the CSV as an ArrayList of objects.  
-
-```Java
+AutoReadCSV rCSV = new AutoReadCSV(new URL("https://raw.githubusercontent.com/jbsooter/AutomaticCSV/2121390239d2e3b4e2dd19045cb06d018e53fb83/data/menu.csv"),"Menu.csv");
+//AutoReadCSV rCSV = new AutoReadCSV("/path/to/csv"); //Local CSV syntax
 ArrayList<Object> csvList = rCSV.readCSV();
 ```
 
-5. Run your main method. The Class mapped to your CSV will appear in your source directory. 
-6. Now that the class is created, you can change the type of your ArrayList to the name of the generated class to access all defined class methods. 
+Run your program. Now, swap out the top-level **Object** class for the newly generated class, **Menu**. 
 ```Java
-ArrayList<GeneratedClass> csvList = rCSV.readCSV();
+ArrayList<Menu> csvList = rCSV.readCSV();
 ```
-7. Print your objects to the console to verify that they were read in correctly. 
-```Java
-for(Object row: csvList)
-{
-System.out.println(row.toString());
-}
-```
-8. That's it! Read more about the details in the documentation below. 
+3. Done!
 
+### Further Documentation: 
 
-Full Demo Code:
+[Datatyping and Import Details](docs/Datatype.md)
 
-```Java
-import java.util.ArrayList;
-
-public class AutomaticCSVDemo  {
-     public static void main(String[] args)
-     {
-       AutoReadCSV rCSV = new AutoReadCSV("/path/to/csv");
-       ArrayList<Object> csvList = rCSV.readCSV();
-       //after your code has ran once, the class mapped to your CSV will be generated
-       //and can be specified as the type of your ArrayList
-       //ArrayList<GeneratedClass> csvList = rCSV.readCSV();
-       
-       for(Object row: csvList)
-       {
-          System.out.println(row.toString());
-       }
-     }
-}
-
-```
-## Documentation
-
-TODO
-
-
+[Sorting and Filtering](docs/SortingFiltering.md)
 
 
