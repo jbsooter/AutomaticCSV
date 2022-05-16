@@ -37,8 +37,8 @@ ArrayList<Menu> csvList = rCSV.readCSV();
 
 ### Further Documentation: 
 
-[Datatyping and Import Details]("Datatype.md")
+[Datatyping and Import Details](Datatype.md)
 
-[Sorting and Filtering]("SortingFiltering.md")
+[Sorting and Filtering](SortingFiltering.md)
 
 
