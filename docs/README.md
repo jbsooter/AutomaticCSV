@@ -12,14 +12,14 @@
 ### Getting Started 
 
 
-1. Add the AutomaticCSV dependancy to your Gradle or Maven Project. ([Maven Central](https://mvnrepository.com/artifact/io.github.jbsooter/AutomaticCSV))
+Add the AutomaticCSV dependancy to your Gradle or Maven Project. ([Maven Central](https://mvnrepository.com/artifact/io.github.jbsooter/AutomaticCSV))
 
   ```Java
   //Gradle
   implementation 'io.github.jbsooter:AutomaticCSV:0.1.4'
   ```
   
-2. Create a new AutoReadCSV object and read in your file as an ArrayList of the top-level **Object** class. 
+Create a new AutoReadCSV object and read in your file as an ArrayList of the top-level **Object** class. 
 
 ```Java
 AutoReadCSV rCSV = new AutoReadCSV(new URL("https://raw.githubusercontent.com/jbsooter/AutomaticCSV/2121390239d2e3b4e2dd19045cb06d018e53fb83/data/menu.csv"),"Menu.csv");
@@ -31,7 +31,8 @@ Run your program. Now, swap out the top-level **Object** class for the newly gen
 ```Java
 ArrayList<Menu> csvList = rCSV.readCSV();
 ```
-3. Done!
+
+Done!
 
 ### Further Documentation: 
 
